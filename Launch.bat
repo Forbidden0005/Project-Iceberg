@@ -1,10 +1,10 @@
 @echo off
-title Penguin - Dependency Check
+title Project Iceberg - Dependency Check
 cd /d "%~dp0"
 
 echo.
 echo  ==========================================
-echo   PENGUIN  --  local-first AI assistant
+echo   PROJECT ICEBERG  --  local-first AI
 echo  ==========================================
 echo.
 
@@ -121,7 +121,7 @@ echo.
 python server.py
 
 echo.
-echo  Penguin stopped.
+echo  Project Iceberg stopped.
 pause
 exit /b 0
 

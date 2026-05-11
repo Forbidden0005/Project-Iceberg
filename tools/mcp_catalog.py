@@ -1,5 +1,5 @@
 """
-MCP Server Catalog — curated list of useful MCP servers for Penguin.
+MCP Server Catalog — curated list of useful MCP servers for Project Iceberg.
 
 Each entry includes:
 - name: Server identifier

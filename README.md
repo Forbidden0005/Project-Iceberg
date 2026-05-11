@@ -1,6 +1,6 @@
-# Penguin
+# Project Iceberg
 
-Local AI agent that takes natural language. Chats, runs tools on your machine, or does both depending on what you ask.
+Local-first AI assistant with MCP support. Runs on your machine, connects to multiple LLM backends, and executes tools based on natural language.
 
 ## Quick Start
 

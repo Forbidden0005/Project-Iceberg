@@ -2,7 +2,7 @@
 MCP (Model Context Protocol) server loader.
 
 Connects to configured MCP servers at startup, discovers their tools, and
-registers them into Penguin's tool registry. The planner and dispatcher then
+registers them into Project Iceberg's tool registry. The planner and dispatcher then
 see MCP tools the same way they see built-in tools — no special-casing needed
 anywhere downstream.
 
@@ -68,7 +68,7 @@ class MCPServerManager:
     Manages persistent async connections to one or more MCP servers.
 
     Runs a dedicated asyncio event loop in a daemon thread so the
-    synchronous Penguin runtime can issue tool calls without spawning a
+    synchronous Project Iceberg runtime can issue tool calls without spawning a
     new subprocess per call or blocking the main thread.
 
     Usage:
@@ -193,10 +193,10 @@ class MCPServerManager:
 
 def _schema_to_args(input_schema: dict) -> list[dict[str, Any]]:
     """
-    Convert an MCP JSON Schema inputSchema to Penguin's args format.
+    Convert an MCP JSON Schema inputSchema to Project Iceberg's args format.
 
-    MCP:     {"type": "object", "properties": {...}, "required": [...]}
-    Penguin: [{"name": str, "required": bool, "description": str}]
+    MCP:           {"type": "object", "properties": {...}, "required": [...]}
+    Project Iceberg: [{"name": str, "required": bool, "description": str}]
     """
     if not isinstance(input_schema, dict):
         return []

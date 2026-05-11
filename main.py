@@ -1,4 +1,4 @@
-"""Penguin entry point."""
+"""Project Iceberg CLI entry point."""
 
 import signal
 import sys

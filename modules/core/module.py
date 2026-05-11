@@ -1,4 +1,4 @@
-"""Core module - Penguin's default general-purpose assistant.
+"""Core module - Project Iceberg's default general-purpose assistant.
 
 This module provides access to all base tools (file ops, web search, scanning).
 It's the default when no other module is selected.
@@ -7,7 +7,7 @@ It's the default when no other module is selected.
 from modules.base import BaseModule, ModuleManifest, ModuleTools
 
 SYSTEM_PROMPT = """\
-You are Penguin, a helpful local AI assistant running on the user's machine.
+You are Project Iceberg, a local-first AI assistant running on the user's machine.
 
 You can:
 - Manage files and directories

@@ -1,5 +1,5 @@
 """
-Penguin web server — bridges the CLI agent to the browser UI.
+Project Iceberg web server — bridges the CLI agent to the browser UI.
 
 Serves ui/index.html at / and exposes a JSON REST API at /api/*.
 
@@ -270,7 +270,7 @@ def api_llm_set() -> Response:
         agent = _require_agent()
         return jsonify({"ok": True, "llm": agent.llm_info(), "needs_restart": False})
     return jsonify(
-        {"ok": False, "needs_restart": True, "error": "Hot-swap failed — restart Penguin to apply."}
+        {"ok": False, "needs_restart": True, "error": "Hot-swap failed — restart Project Iceberg to apply."}
     )
 
 
@@ -384,7 +384,7 @@ def api_mcp_add() -> Response:
 @app.route("/api/restart", methods=["POST"])
 def api_restart() -> Response:
     """
-    Restart Penguin server.
+    Restart Project Iceberg server.
 
     This endpoint triggers a clean shutdown and restart of the Flask app.
     """
@@ -402,7 +402,7 @@ def api_restart() -> Response:
     # Trigger restart in background thread
     threading.Thread(target=restart_server, daemon=True).start()
 
-    return jsonify({"ok": True, "message": "Restarting Penguin..."})
+    return jsonify({"ok": True, "message": "Restarting Project Iceberg..."})
 
 
 # ---------------------------------------------------------------------------
@@ -411,7 +411,7 @@ def api_restart() -> Response:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Penguin web server")
+    parser = argparse.ArgumentParser(description="Project Iceberg web server")
     parser.add_argument("--port", type=int, default=5000)
     parser.add_argument("--host", default="127.0.0.1")
     args = parser.parse_args()
@@ -419,7 +419,7 @@ def main() -> None:
     # Boot the agent in the background so Flask can start accepting requests.
     threading.Thread(target=_boot_agent, daemon=True).start()
 
-    print(f"\n  Penguin → http://{args.host}:{args.port}")
+    print(f"\n  Project Iceberg → http://{args.host}:{args.port}")
     print("  Ctrl+C to stop.\n")
     app.run(host=args.host, port=args.port, debug=False, use_reloader=False)
 
