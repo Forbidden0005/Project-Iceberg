@@ -1,0 +1,45 @@
+[project]
+name = "ai-assistant"
+version = "0.3.0"
+description = "Local AI assistant: natural language, tool use, pluggable LLM backends."
+requires-python = ">=3.9"
+
+[tool.ruff]
+line-length = 110
+target-version = "py39"
+# Keep plugin and voice modules; exclude cache
+exclude = ["__pycache__", ".venv", "build", "dist"]
+
+[tool.ruff.lint]
+# Baseline rule set: pyflakes + pycodestyle errors + import hygiene + simple bugs
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear (catches common bugs)
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+    "PL",   # pylint subset
+]
+# Practical exceptions - these fire more noise than signal in this codebase
+ignore = [
+    "E501",     # line-too-long (we set line-length above; skip the rest)
+    "PLR0913",  # too-many-args (orchestrator DI constructor needs them)
+    "PLR2004",  # magic-value-comparison (some test expects exact values)
+    "PLR0912",  # too-many-branches (CLI dispatch)
+    "PLR0911",  # too-many-returns (planner regex cascade, intentional)
+    "SIM108",   # if-else-to-ternary (sometimes the if is clearer)
+    "B904",     # raise-without-from-inside-except (not always relevant)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["PLR2004", "E501"]  # tests often use magic values + long assertions
+
+[tool.black]
+line-length = 110
+target-version = ["py39"]
+
+[tool.vulture]
+min_confidence = 80
+paths = ["."]
+exclude = ["tests/", "__pycache__/"]

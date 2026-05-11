@@ -1,0 +1,122 @@
+"""
+Central tool registry.
+
+Each entry:
+  func:        callable
+  description: human description (used in help + LLM prompts)
+  category:    file | system | web | custom (used for sub-agent routing)
+  args:        list of {"name": str, "required": bool, "description": str}
+"""
+
+from tools.file_tools import append_file, create_file, delete_file, list_dir, move_file, read_file
+from tools.scan_tools import scan
+from tools.web_tools import web_search
+
+TOOL_REGISTRY = {
+    "list_dir": {
+        "func": list_dir,
+        "description": "List the contents of a directory.",
+        "category": "file",
+        "args": [
+            {"name": "path", "required": False, "description": "Directory path. Defaults to current dir."},
+        ],
+    },
+    "create_file": {
+        "func": create_file,
+        "description": "Create a file, optionally with content.",
+        "category": "file",
+        "args": [
+            {"name": "path", "required": True, "description": "Path to create."},
+            {"name": "content", "required": False, "description": "Text content to write."},
+        ],
+    },
+    "delete_file": {
+        "func": delete_file,
+        "description": "Delete a single file (not a directory).",
+        "category": "file",
+        "args": [{"name": "path", "required": True, "description": "File to delete."}],
+    },
+    "move_file": {
+        "func": move_file,
+        "description": "Move or rename a file.",
+        "category": "file",
+        "args": [
+            {"name": "src", "required": True, "description": "Source path."},
+            {"name": "dst", "required": True, "description": "Destination path."},
+        ],
+    },
+    "read_file": {
+        "func": read_file,
+        "description": "Read the contents of a text file.",
+        "category": "file",
+        "args": [{"name": "path", "required": True, "description": "File to read."}],
+    },
+    "append_file": {
+        "func": append_file,
+        "description": "Append text to a file (creates it if missing).",
+        "category": "file",
+        "args": [
+            {"name": "path", "required": True, "description": "File to append to."},
+            {"name": "content", "required": True, "description": "Text to append."},
+        ],
+    },
+    "scan": {
+        "func": scan,
+        "description": "Walk a directory tree. Modes: LOW (dirs), MEDIUM (dirs+files), HIGH (files+previews).",
+        "category": "file",
+        "args": [
+            {"name": "path", "required": False, "description": "Root to scan. Defaults to '.'."},
+            {"name": "mode", "required": False, "description": "LOW | MEDIUM | HIGH."},
+        ],
+    },
+    "web_search": {
+        "func": web_search,
+        "description": "Search the web via DuckDuckGo.",
+        "category": "web",
+        "args": [{"name": "query", "required": True, "description": "Search query."}],
+    },
+}
+
+
+def get_tool(name: str):
+    entry = TOOL_REGISTRY.get(name)
+    return entry["func"] if entry else None
+
+
+def get_category(name: str) -> str:
+    entry = TOOL_REGISTRY.get(name)
+    return entry["category"] if entry else "unknown"
+
+
+def describe_all() -> str:
+    """Human-readable tool list for the `tools` command."""
+    lines = []
+    for name, entry in sorted(TOOL_REGISTRY.items()):
+        lines.append(f"  {name:14s} [{entry['category']}] - {entry['description']}")
+    return "\n".join(lines)
+
+
+def describe_for_llm() -> str:
+    """Detailed tool spec for LLM prompts, with arg schema."""
+    lines = []
+    for name, entry in sorted(TOOL_REGISTRY.items()):
+        arg_parts = []
+        for a in entry.get("args", []):
+            tag = "" if a.get("required") else "?"
+            arg_parts.append(f"{a['name']}{tag}")
+        sig = f"{name}({', '.join(arg_parts)})"
+        lines.append(f"- {sig}: {entry['description']}")
+        for a in entry.get("args", []):
+            req = "required" if a.get("required") else "optional"
+            lines.append(f"    - {a['name']} ({req}): {a['description']}")
+    return "\n".join(lines)
+
+
+def register(name: str, func, description: str = "", category: str = "custom", args=None) -> None:
+    """Used by plugins."""
+    TOOL_REGISTRY[name] = {
+        "func": func,
+        "description": description,
+        "category": category,
+        "args": args or [],
+    }

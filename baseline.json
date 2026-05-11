@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-04-21",
+  "tests": {
+    "total": 46,
+    "passing": 46
+  },
+  "ruff": {
+    "total_findings": 2,
+    "findings": [
+      "F401 unused import datetime in agent_core/logger.py:5",
+      "F401 unused import time in automation/scheduler.py:3"
+    ]
+  },
+  "vulture": {
+    "total_findings": 4,
+    "findings": [
+      "logger.py unused datetime import",
+      "scheduler.py unused time import",
+      "main.py:81 signal handler args (legitimate, API contract)"
+    ]
+  },
+  "tooling_config_present": false,
+  "notes": "No pyproject.toml, no .editorconfig, no ruff config. Baseline for clean-codebase skill Step 1."
+}

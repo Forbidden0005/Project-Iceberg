@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Penguin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#070c1a;
+  --surf:#0b1124;
+  --card:#0f1830;
+  --card2:#131e3a;
+  --bdr:rgba(48,80,148,0.3);
+  --bdr2:rgba(60,100,180,0.5);
+  --bdr3:rgba(61,143,255,0.6);
+  --accent:#3d8fff;
+  --accent2:#6ab0ff;
+  --cyan:#00c8f0;
+  --green:#00e09a;
+  --red:#ff4455;
+  --amber:#ffaa00;
+  --t1:#d4e5ff;
+  --t2:#5f7dac;
+  --t3:#28385a;
+  --fd:'Chakra Petch',sans-serif;
+  --fm:'JetBrains Mono',monospace;
+}
+
+html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm);font-size:13px;line-height:1.5;overflow:hidden}
+
+.shell{
+  display:grid;
+  grid-template-rows:48px 1fr 60px;
+  grid-template-columns:268px 1fr 244px;
+  height:100vh;
+}
+
+/* ── SCANLINES ──────────────────────────────────────────── */
+.scanlines{
+  position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.025) 2px,rgba(0,0,0,0.025) 4px);
+}
+
+/* ── TOPBAR ─────────────────────────────────────────────── */
+.topbar{
+  grid-column:1/-1;grid-row:1;
+  display:flex;align-items:center;gap:14px;
+  padding:0 20px;
+  background:var(--surf);
+  border-bottom:1px solid var(--bdr);
+}
+
+.logo{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--fd);font-size:15px;font-weight:700;
+  letter-spacing:0.14em;color:var(--t1);text-transform:uppercase;
+  margin-right:6px;
+}
+
+.logo svg{flex-shrink:0}
+
+.pill{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 11px;
+  background:var(--card);border:1px solid var(--bdr);border-radius:4px;
+  font-family:var(--fm);font-size:11px;color:var(--t2);
+  white-space:nowrap;
+}
+.pill .pval{color:var(--t1);font-weight:500}
+
+.pdot{
+  width:6px;height:6px;border-radius:50%;flex-shrink:0;
+}
+.pdot.g{background:var(--green);box-shadow:0 0 7px var(--green);animation:glow 2.4s ease-in-out infinite}
+.pdot.b{background:var(--accent);box-shadow:0 0 7px var(--accent)}
+.pdot.off{background:var(--t3)}
+
+@keyframes glow{0%,100%{opacity:1}50%{opacity:.35}}
+
+.spacer{flex:1}
+
+.tbtn{
+  padding:5px 13px;background:transparent;
+  border:1px solid var(--bdr2);border-radius:4px;
+  color:var(--t2);font-family:var(--fd);font-size:10px;font-weight:600;
+  letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;
+  transition:all .15s;
+}
+.tbtn:hover{border-color:var(--accent);color:var(--accent2)}
+.tbtn.active{border-color:var(--green);color:var(--green)}
+
+/* ── LEFT PANEL ─────────────────────────────────────────── */
+.lp{
+  grid-column:1;grid-row:2;
+  background:var(--surf);border-right:1px solid var(--bdr);
+  overflow-y:auto;padding:14px 10px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.lp::-webkit-scrollbar{width:3px}
+.lp::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
+
+.plabel{
+  font-family:var(--fd);font-size:9px;font-weight:700;
+  letter-spacing:0.2em;text-transform:uppercase;color:var(--t3);
+  padding:2px 4px;margin-bottom:2px;
+}
+
+/* server cards */
+.sc{
+  background:var(--card);border:1px solid var(--bdr);border-radius:6px;
+  padding:12px 11px;cursor:pointer;transition:all .15s;
+  position:relative;overflow:hidden;
+}
+.sc::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:transparent;transition:background .2s;
+}
+.sc:hover{background:var(--card2);border-color:var(--bdr2)}
+.sc:hover::before{background:var(--accent)}
+.sc.expanded{border-color:var(--bdr3)}
+.sc.expanded::before{background:var(--accent)}
+
+.sc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+
+.sc-name{
+  font-family:var(--fd);font-size:11px;font-weight:700;
+  letter-spacing:0.06em;text-transform:uppercase;color:var(--t1);
+}
+
+.sc-status{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--t2)}
+
+.sdot{
+  width:7px;height:7px;border-radius:50%;flex-shrink:0;
+}
+.sdot.on{background:var(--green);box-shadow:0 0 8px var(--green);animation:glow 2.4s ease-in-out infinite}
+.sdot.off{background:var(--t3)}
+
+.sc-desc{font-size:11px;color:var(--t2);margin-bottom:7px;line-height:1.4}
+
+.sc-count{
+  font-family:var(--fd);font-size:9px;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--t3);
+}
+.sc-count span{color:var(--accent2)}
+
+.sc-tools{
+  margin-top:9px;padding-top:9px;border-top:1px solid var(--bdr);
+  display:none;flex-direction:column;gap:2px;
+}
+.sc.expanded .sc-tools{display:flex}
+
+.sc-tool{font-size:11px;color:var(--t2);padding:1px 0}
+.sc-tool::before{content:'→ ';color:var(--t3)}
+.sc-more{font-size:10px;color:var(--t3);font-style:italic;padding-left:14px;margin-top:2px}
+
+.divider{height:1px;background:var(--bdr);margin:2px 0}
+
+.add-btn{
+  width:100%;padding:8px;background:transparent;
+  border:1px dashed var(--bdr2);border-radius:5px;
+  color:var(--t3);font-family:var(--fd);font-size:10px;font-weight:600;
+  letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;
+  transition:all .15s;text-align:center;
+}
+.add-btn:hover{border-color:var(--accent);color:var(--accent2)}
+
+/* ── CHAT ───────────────────────────────────────────────── */
+.cc{
+  grid-column:2;grid-row:2;
+  display:flex;flex-direction:column;overflow:hidden;
+  border-right:1px solid var(--bdr);
+}
+
+.msgs{
+  flex:1;overflow-y:auto;
+  padding:22px 22px 10px;
+  display:flex;flex-direction:column;gap:18px;
+}
+.msgs::-webkit-scrollbar{width:4px}
+.msgs::-webkit-scrollbar-track{background:transparent}
+.msgs::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
+
+.msg{display:flex;flex-direction:column;max-width:82%;animation:msgIn .22s ease-out}
+@keyframes msgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.msg.u{align-self:flex-end;align-items:flex-end}
+.msg.a{align-self:flex-start;align-items:flex-start}
+
+.mmeta{
+  font-size:9px;color:var(--t3);margin-bottom:4px;
+  letter-spacing:0.08em;text-transform:uppercase;font-family:var(--fd);
+}
+
+.mbubble{
+  padding:10px 14px;border-radius:8px;
+  font-size:13px;line-height:1.65;
+}
+.msg.u .mbubble{
+  background:rgba(61,143,255,0.14);
+  border:1px solid rgba(61,143,255,0.3);
+  color:var(--t1);
+}
+.msg.a .mbubble{
+  background:var(--card);border:1px solid var(--bdr);color:var(--t1);
+}
+
+/* tool execution block */
+.toolex{
+  margin-top:8px;
+  background:rgba(5,8,20,0.8);
+  border:1px solid var(--bdr);border-left:2px solid var(--accent);
+  border-radius:6px;padding:8px 12px;
+  font-size:11px;
+}
+.toolex-head{
+  display:flex;align-items:center;gap:6px;
+  font-family:var(--fd);font-size:9px;font-weight:700;
+  letter-spacing:0.12em;text-transform:uppercase;color:var(--accent2);
+  margin-bottom:5px;
+}
+.toolex-name{color:var(--t2);font-family:var(--fm);margin-bottom:4px}
+.toolex-result{
+  color:var(--t2);font-size:11px;
+  white-space:pre-wrap;max-height:72px;overflow-y:auto;
+  border-top:1px solid var(--bdr);padding-top:4px;margin-top:4px;
+}
+.toolex-result::-webkit-scrollbar{width:2px}
+.toolex-result::-webkit-scrollbar-thumb{background:var(--bdr2)}
+
+/* typing indicator */
+.typing-wrap{
+  background:var(--card);border:1px solid var(--bdr);border-radius:8px;
+  padding:11px 16px;
+  display:flex;align-items:center;gap:5px;
+}
+.tdot{
+  width:5px;height:5px;border-radius:50%;background:var(--t2);
+  animation:bounce 1.2s ease-in-out infinite;
+}
+.tdot:nth-child(2){animation-delay:.2s}
+.tdot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,100%{transform:translateY(0);opacity:.35}50%{transform:translateY(-5px);opacity:1}}
+
+/* ── INPUT BAR ──────────────────────────────────────────── */
+.ib{
+  grid-column:2;grid-row:3;
+  display:flex;align-items:center;gap:8px;
+  padding:10px 16px;
+  background:var(--surf);border-top:1px solid var(--bdr);
+  border-right:1px solid var(--bdr);
+}
+
+.cinput{
+  flex:1;background:var(--card);border:1px solid var(--bdr);border-radius:6px;
+  padding:9px 14px;color:var(--t1);font-family:var(--fm);font-size:13px;
+  outline:none;resize:none;height:38px;transition:border-color .15s;
+}
+.cinput:focus{border-color:var(--bdr3)}
+.cinput::placeholder{color:var(--t3)}
+
+.ibtn{
+  width:36px;height:36px;border-radius:6px;
+  background:var(--card);border:1px solid var(--bdr);
+  color:var(--t2);display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .15s;flex-shrink:0;
+}
+.ibtn:hover{border-color:var(--accent);color:var(--accent2)}
+.ibtn.send{background:var(--accent);border-color:var(--accent);color:#fff}
+.ibtn.send:hover{background:var(--accent2);border-color:var(--accent2)}
+.ibtn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── RIGHT PANEL ────────────────────────────────────────── */
+.rp{
+  grid-column:3;grid-row:2;
+  background:var(--surf);overflow-y:auto;
+  padding:14px 10px;display:flex;flex-direction:column;gap:3px;
+}
+.rp::-webkit-scrollbar{width:3px}
+.rp::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
+
+.sinput{
+  width:100%;background:var(--card);border:1px solid var(--bdr);
+  border-radius:4px;padding:6px 10px;color:var(--t1);
+  font-family:var(--fm);font-size:11px;outline:none;
+  transition:border-color .15s;margin-bottom:10px;
+}
+.sinput:focus{border-color:var(--bdr3)}
+.sinput::placeholder{color:var(--t3)}
+
+.tglabel{
+  font-family:var(--fd);font-size:9px;font-weight:700;
+  letter-spacing:0.2em;text-transform:uppercase;color:var(--t3);
+  padding:6px 4px 2px;margin-top:4px;
+}
+
+.trow{
+  display:flex;align-items:center;gap:8px;
+  padding:4px 6px;border-radius:4px;cursor:pointer;transition:background .1s;
+}
+.trow:hover{background:var(--card)}
+.tname{
+  font-family:var(--fm);font-size:11px;color:var(--accent2);
+  flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.tcat{
+  font-size:9px;padding:2px 5px;border-radius:3px;
+  font-family:var(--fd);letter-spacing:0.05em;text-transform:uppercase;
+  flex-shrink:0;
+}
+.tcat.bi{background:rgba(48,80,148,0.25);color:var(--t2)}
+.tcat.mc{background:rgba(0,200,240,0.1);color:var(--cyan)}
+
+/* ── BOTTOM FLANKS ──────────────────────────────────────── */
+.lb{
+  grid-column:1;grid-row:3;
+  background:var(--surf);border-top:1px solid var(--bdr);border-right:1px solid var(--bdr);
+  display:flex;align-items:center;justify-content:center;
+}
+.lb span{
+  font-family:var(--fd);font-size:9px;color:var(--t3);
+  letter-spacing:0.15em;text-transform:uppercase;
+}
+
+.rb{
+  grid-column:3;grid-row:3;
+  background:var(--surf);border-top:1px solid var(--bdr);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:3px;
+}
+.rb span{
+  font-family:var(--fd);font-size:9px;color:var(--t3);
+  letter-spacing:0.12em;text-transform:uppercase;
+}
+.rb .ver{color:var(--t2);font-size:10px}
+
+/* ── MODAL / ADD SERVER ─────────────────────────────────── */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(4,7,18,0.85);
+  display:none;align-items:center;justify-content:center;z-index:100;
+}
+.modal-bg.open{display:flex}
+.modal{
+  background:var(--surf);border:1px solid var(--bdr2);border-radius:8px;
+  padding:24px;width:420px;
+}
+.modal-title{
+  font-family:var(--fd);font-size:13px;font-weight:700;
+  letter-spacing:0.1em;text-transform:uppercase;color:var(--t1);
+  margin-bottom:16px;
+}
+.modal pre{
+  background:var(--card);border:1px solid var(--bdr);border-radius:6px;
+  padding:12px;font-size:11px;color:var(--cyan);line-height:1.7;
+  overflow-x:auto;margin-bottom:16px;
+}
+.modal-close{
+  padding:6px 16px;background:transparent;border:1px solid var(--bdr2);
+  border-radius:4px;color:var(--t2);font-family:var(--fd);font-size:10px;
+  font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;
+  transition:all .15s;
+}
+.modal-close:hover{border-color:var(--accent);color:var(--accent2)}
+
+/* ── LLM PICKER MODAL ───────────────────────────────────── */
+.llm-modal-bg{
+  position:fixed;inset:0;background:rgba(4,7,18,0.88);
+  display:none;align-items:center;justify-content:center;z-index:110;
+}
+.llm-modal-bg.open{display:flex}
+.llm-modal{
+  background:var(--surf);border:1px solid var(--bdr2);border-radius:8px;
+  padding:22px;width:460px;max-height:78vh;display:flex;flex-direction:column;
+}
+.llm-modal-title{
+  font-family:var(--fd);font-size:12px;font-weight:700;
+  letter-spacing:0.12em;text-transform:uppercase;color:var(--t1);
+  margin-bottom:4px;
+}
+.llm-modal-sub{font-size:11px;color:var(--t2);margin-bottom:14px}
+.llm-search{
+  width:100%;background:var(--card);border:1px solid var(--bdr);
+  border-radius:4px;padding:7px 11px;color:var(--t1);
+  font-family:var(--fm);font-size:12px;outline:none;
+  transition:border-color .15s;margin-bottom:10px;flex-shrink:0;
+}
+.llm-search:focus{border-color:var(--bdr3)}
+.llm-search::placeholder{color:var(--t3)}
+.model-list{
+  overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:3px;
+}
+.model-list::-webkit-scrollbar{width:3px}
+.model-list::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
+.model-group-label{
+  font-family:var(--fd);font-size:9px;font-weight:700;
+  letter-spacing:0.2em;text-transform:uppercase;color:var(--t3);
+  padding:6px 4px 3px;
+}
+.model-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:5px;cursor:pointer;
+  border:1px solid transparent;transition:all .12s;
+}
+.model-item:hover{background:var(--card2);border-color:var(--bdr)}
+.model-item.active{
+  background:rgba(61,143,255,0.08);
+  border-color:rgba(61,143,255,0.35);
+}
+.model-item.loading{opacity:.5;pointer-events:none}
+.mi-name{
+  font-family:var(--fm);font-size:12px;color:var(--t1);
+  flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.mi-size{
+  font-size:10px;color:var(--t3);font-family:var(--fd);
+  letter-spacing:0.05em;flex-shrink:0;
+}
+.mi-check{
+  width:14px;height:14px;flex-shrink:0;color:var(--green);
+}
+.mi-prov{
+  font-size:9px;padding:2px 6px;border-radius:3px;
+  font-family:var(--fd);letter-spacing:0.05em;text-transform:uppercase;
+  background:rgba(0,200,240,0.1);color:var(--cyan);flex-shrink:0;
+}
+.llm-modal-footer{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:14px;padding-top:12px;border-top:1px solid var(--bdr);
+  flex-shrink:0;
+}
+.llm-status-msg{font-size:11px;color:var(--t2);font-family:var(--fm)}
+.llm-status-msg.ok{color:var(--green)}
+.llm-status-msg.err{color:var(--red)}
+.llm-close-btn{
+  padding:5px 14px;background:transparent;border:1px solid var(--bdr2);
+  border-radius:4px;color:var(--t2);font-family:var(--fd);font-size:10px;
+  font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;
+  transition:all .15s;
+}
+.llm-close-btn:hover{border-color:var(--accent);color:var(--accent2)}
+.llm-pill-btn{cursor:pointer;transition:border-color .15s}
+.llm-pill-btn:hover{border-color:var(--accent2)!important}
+
+/* boot overlay */
+.boot-overlay{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:18px;z-index:200;transition:opacity .4s;
+}
+.boot-overlay.hidden{opacity:0;pointer-events:none}
+.boot-logo{
+  font-family:var(--fd);font-size:22px;font-weight:700;
+  letter-spacing:0.2em;color:var(--t1);text-transform:uppercase;
+}
+.boot-status{
+  font-family:var(--fm);font-size:11px;color:var(--t2);
+}
+.boot-bar{
+  width:220px;height:2px;background:var(--bdr);border-radius:2px;overflow:hidden;
+}
+.boot-fill{
+  height:100%;background:var(--accent);border-radius:2px;
+  animation:bootfill 2s ease-in-out infinite alternate;
+}
+@keyframes bootfill{from{width:5%}to{width:90%}}
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+
+<!-- BOOT OVERLAY -->
+<div class="boot-overlay" id="boot-overlay">
+  <div class="boot-logo">
+    <svg width="32" height="32" viewBox="0 0 26 26" fill="none" style="vertical-align:middle;margin-right:10px">
+      <ellipse cx="13" cy="16" rx="8" ry="9.5" fill="#d4e5ff"/>
+      <ellipse cx="13" cy="17.5" rx="5" ry="6.5" fill="#070c1a"/>
+      <ellipse cx="13" cy="19" rx="3.2" ry="4.5" fill="#d4e5ff"/>
+      <circle cx="13" cy="8" r="6.5" fill="#070c1a"/>
+      <circle cx="10.5" cy="7.2" r="1.7" fill="#d4e5ff"/>
+      <circle cx="15.5" cy="7.2" r="1.7" fill="#d4e5ff"/>
+      <circle cx="10.5" cy="7.2" r=".85" fill="#070c1a"/>
+      <circle cx="15.5" cy="7.2" r=".85" fill="#070c1a"/>
+      <polygon points="13,9.5 11.5,12 14.5,12" fill="#ffaa00"/>
+    </svg>
+    Penguin
+  </div>
+  <div class="boot-bar"><div class="boot-fill"></div></div>
+  <div class="boot-status" id="boot-status">Connecting to backend…</div>
+</div>
+
+<!-- LLM PICKER MODAL -->
+<div class="llm-modal-bg" id="llm-modal">
+  <div class="llm-modal">
+    <div class="llm-modal-title">Select Model</div>
+    <div class="llm-modal-sub" id="llm-modal-sub">Loading available models…</div>
+    <input class="llm-search" type="text" id="llm-search" placeholder="filter models…" oninput="filterModels(this.value)">
+    <div class="model-list" id="model-list">
+      <div style="font-size:11px;color:var(--t3);padding:8px 4px">Querying Ollama…</div>
+    </div>
+    <div class="llm-modal-footer">
+      <span class="llm-status-msg" id="llm-status-msg"></span>
+      <button class="llm-close-btn" onclick="closeLLMPicker()">close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD SERVER MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-title">Connect MCP Server</div>
+    <p style="font-size:12px;color:var(--t2);margin-bottom:14px;line-height:1.6">
+      Select a server to add. Penguin will restart after adding.
+    </p>
+    <div id="mcp-catalog-list" style="max-height:400px;overflow-y:auto">
+      <div style="font-size:11px;color:var(--t3);padding:8px 4px">Loading catalog…</div>
+    </div>
+    <button class="modal-close" onclick="closeModal()">close</button>
+  </div>
+</div>
+
+<!-- API KEY INPUT MODAL -->
+<div class="modal-bg" id="api-key-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-title" id="api-key-title">Enter API Key</div>
+    <p style="font-size:12px;color:var(--t2);margin-bottom:14px;line-height:1.6" id="api-key-label">
+      This server requires an API key.
+    </p>
+    <input type="text" id="api-key-input" placeholder="Enter your key here" 
+           style="width:100%;padding:10px;background:var(--card);border:1px solid var(--bdr);border-radius:4px;color:var(--t1);font-family:var(--fm);font-size:12px;margin-bottom:14px">
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="modal-close" onclick="closeApiKeyModal()">cancel</button>
+      <button class="modal-close" onclick="submitApiKey()" style="background:var(--accent);color:#fff">add server</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESTART CONFIRMATION MODAL -->
+<div class="modal-bg" id="restart-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-title">Restart Required</div>
+    <p style="font-size:12px;color:var(--t2);margin-bottom:14px;line-height:1.6">
+      Server added successfully! Penguin needs to restart to load the new MCP server.
+    </p>
+    <p style="font-size:12px;color:var(--green);margin-bottom:14px">
+      ✓ <span id="restart-server-name"></span> added to config.json
+    </p>
+    <p style="font-size:12px;color:var(--t2);margin-bottom:20px">
+      Would you like to restart now?
+    </p>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="modal-close" onclick="closeRestartModal()">no, restart later</button>
+      <button class="modal-close" onclick="restartNow()" style="background:var(--accent);color:#fff">yes, restart now</button>
+    </div>
+  </div>
+</div>
+
+<!-- NPX MISSING MODAL -->
+<div class="modal-bg" id="npx-missing-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-title">Node.js Required</div>
+    <p style="font-size:12px;color:var(--t2);margin-bottom:14px;line-height:1.6">
+      MCP servers require Node.js and npx to run, but they're not installed on your system.
+    </p>
+    <p style="font-size:12px;color:var(--t3);margin-bottom:20px;line-height:1.6">
+      Node.js is free and open-source. Installing it will give you access to thousands of MCP servers.
+    </p>
+    <p style="font-size:12px;color:var(--t2);margin-bottom:20px;font-weight:600">
+      Would you like to download and install Node.js now?
+    </p>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="modal-close" onclick="closeNpxMissingModal()">no, maybe later</button>
+      <button class="modal-close" onclick="openNodeJsDownload()" style="background:var(--accent);color:#fff">yes, download Node.js</button>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+
+<!-- ── TOPBAR ── -->
+<header class="topbar">
+  <div class="logo">
+    <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+      <ellipse cx="13" cy="16" rx="8" ry="9.5" fill="#d4e5ff"/>
+      <ellipse cx="13" cy="17.5" rx="5" ry="6.5" fill="#0b1124"/>
+      <ellipse cx="13" cy="19" rx="3.2" ry="4.5" fill="#d4e5ff"/>
+      <circle cx="13" cy="8" r="6.5" fill="#0b1124"/>
+      <circle cx="10.5" cy="7.2" r="1.7" fill="#d4e5ff"/>
+      <circle cx="15.5" cy="7.2" r="1.7" fill="#d4e5ff"/>
+      <circle cx="10.5" cy="7.2" r=".85" fill="#0b1124"/>
+      <circle cx="15.5" cy="7.2" r=".85" fill="#0b1124"/>
+      <polygon points="13,9.5 11.5,12 14.5,12" fill="#ffaa00"/>
+    </svg>
+    Penguin
+  </div>
+
+  <div class="pill llm-pill-btn" onclick="openLLMPicker()" title="Click to switch model">
+    <span class="pdot off" id="llm-dot"></span>
+    <span>LLM</span>
+    <span class="pval" id="llm-val">—</span>
+    <svg width="8" height="8" viewBox="0 0 8 8" fill="none" style="margin-left:2px;opacity:.4">
+      <path d="M1 2.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <div class="pill">
+    <span class="pdot off" id="mcp-dot"></span>
+    <span>MCP</span>
+    <span class="pval" id="mcp-val">—</span>
+  </div>
+
+  <div class="pill">
+    <span class="pdot b"></span>
+    <span>Tools</span>
+    <span class="pval" id="tools-val">—</span>
+  </div>
+
+  <div class="pill">
+    <span>Memory</span>
+    <span class="pval" id="memory-val">—</span>
+  </div>
+
+  <div class="spacer"></div>
+
+  <button class="tbtn" id="voice-btn" onclick="toggleVoice()">⬤ voice</button>
+  <button class="tbtn" onclick="openModal()">+ server</button>
+  <button class="tbtn" id="reset-btn" onclick="resetChat()">reset</button>
+</header>
+
+<!-- ── LEFT PANEL ── -->
+<aside class="lp">
+  <div class="plabel">MCP Servers</div>
+  <div id="srv-list">
+    <div style="font-size:11px;color:var(--t3);padding:8px 4px">Connecting…</div>
+  </div>
+  <div class="divider"></div>
+  <div class="plabel" style="margin-top:2px">Add Server</div>
+  <button class="add-btn" onclick="openModal()">+ connect mcp server</button>
+  <div style="flex:1"></div>
+  <div style="padding:4px 4px 0;font-family:var(--fd);font-size:9px;color:var(--t3);letter-spacing:0.12em;text-transform:uppercase;line-height:1.8">
+    local-first · private<br>offline-capable
+  </div>
+</aside>
+
+<!-- ── CHAT ── -->
+<main class="cc">
+  <div class="msgs" id="msgs">
+    <div class="msg a">
+      <div class="mmeta">Penguin</div>
+      <div class="mbubble">
+        <span id="welcome-msg" style="color:var(--t2)">Connecting to backend…</span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ── RIGHT PANEL ── -->
+<aside class="rp">
+  <div class="plabel">Tool Registry</div>
+  <input class="sinput" type="text" placeholder="filter tools…" id="tsearch" oninput="filterTools(this.value)">
+  <div id="tlist">
+    <div style="font-size:11px;color:var(--t3);padding:4px">Loading…</div>
+  </div>
+</aside>
+
+<!-- ── BOTTOM ROW ── -->
+<div class="lb"><span>local-first · offline-capable</span></div>
+
+<div class="ib">
+  <textarea class="cinput" id="cinput" placeholder="ask anything or give an instruction…" onkeydown="handleKey(event)" rows="1"></textarea>
+  <button class="ibtn" id="vbtn" title="Voice input" onclick="toggleVoice()">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <rect x="4.5" y="1" width="5" height="8" rx="2.5" fill="currentColor"/>
+      <path d="M2 7c0 2.76 2.24 5 5 5s5-2.24 5-5" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <line x1="7" y1="12" x2="7" y2="14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+    </svg>
+  </button>
+  <button class="ibtn send" id="send-btn" onclick="sendMsg()" title="Send (Enter)">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M1 7h12M8 2l5 5-5 5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+</div>
+
+<div class="rb">
+  <span class="ver">PENGUIN</span>
+  <span>v2.0 · mcp ready</span>
+</div>
+
+</div><!-- .shell -->
+
+<script>
+// ── State ────────────────────────────────────────────────────
+const expanded = {};
+let isSending = false;
+let voiceOn = false;
+
+// ── Helpers ──────────────────────────────────────────────────
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function setInputEnabled(on) {
+  const inp = document.getElementById('cinput');
+  const btn = document.getElementById('send-btn');
+  inp.disabled = !on;
+  btn.disabled = !on;
+  if (!on) btn.classList.add('disabled');
+  else btn.classList.remove('disabled');
+}
+
+// ── Boot sequence ────────────────────────────────────────────
+// Poll /api/ready until the agent is up, then load everything.
+async function pollReady() {
+  const el = document.getElementById('boot-status');
+  let attempts = 0;
+  while (true) {
+    try {
+      const res = await fetch('/api/ready');
+      const d = await res.json();
+      if (d.ready) {
+        if (d.error) {
+          el.textContent = 'Agent error: ' + d.error;
+          el.style.color = 'var(--red)';
+          return false;
+        }
+        return true;
+      }
+    } catch(e) {
+      // server not up yet — normal on first load
+    }
+    attempts++;
+    const msgs = ['Connecting to backend…', 'Loading LLM…', 'Discovering MCP servers…', 'Registering tools…', 'Almost ready…'];
+    el.textContent = msgs[Math.min(Math.floor(attempts / 3), msgs.length - 1)];
+    await new Promise(r => setTimeout(r, 800));
+  }
+}
+
+async function boot() {
+  const ok = await pollReady();
+  const overlay = document.getElementById('boot-overlay');
+  overlay.classList.add('hidden');
+  setTimeout(() => overlay.style.display = 'none', 500);
+
+  if (!ok) return;
+
+  // Load all live data in parallel
+  await Promise.all([loadStatus(), loadServers(), loadTools()]);
+  setInputEnabled(true);
+}
+
+// ── Status pills ─────────────────────────────────────────────
+async function loadStatus() {
+  try {
+    const res = await fetch('/api/status');
+    if (!res.ok) return;
+    const d = await res.json();
+
+    document.getElementById('llm-val').textContent = d.llm;
+    document.getElementById('llm-dot').className = 'pdot ' + (d.llm_active ? 'g' : 'off');
+    document.getElementById('mcp-dot').className = 'pdot ' + (d.mcp_servers.length > 0 ? 'g' : 'off');
+    document.getElementById('mcp-val').textContent = d.mcp_servers.length + ' connected';
+    document.getElementById('tools-val').textContent = d.tools_count + ' registered';
+    document.getElementById('memory-val').textContent = d.memory_count + ' entr' + (d.memory_count === 1 ? 'y' : 'ies');
+
+    const wm = document.getElementById('welcome-msg');
+    if (wm) {
+      const mcpStr = d.mcp_servers.length
+        ? 'MCP: <span style="color:var(--accent2)">' + esc(d.mcp_servers.join(', ')) + '</span>. '
+        : '';
+      wm.innerHTML =
+        'Ready. LLM: <span style="color:var(--accent2)">' + esc(d.llm) + '</span>. ' +
+        mcpStr +
+        '<span style="color:var(--t2)">' + d.tools_count + ' tools. Type anything.</span>';
+    }
+  } catch(e) {
+    console.warn('[status]', e);
+  }
+}
+
+// ── MCP server cards ─────────────────────────────────────────
+function toggleSrv(n) {
+  expanded[n] = !expanded[n];
+  const el = document.getElementById('srv-' + n);
+  if (el) el.classList.toggle('expanded', !!expanded[n]);
+}
+
+async function loadServers() {
+  try {
+    const res = await fetch('/api/servers');
+    if (!res.ok) return;
+    const servers = await res.json();
+    renderServers(servers);
+  } catch(e) {
+    console.warn('[servers]', e);
+  }
+}
+
+function renderServers(servers) {
+  const sl = document.getElementById('srv-list');
+  if (!servers.length) {
+    sl.innerHTML =
+      '<div style="font-size:11px;color:var(--t3);padding:8px 4px;line-height:1.9">' +
+      'No servers connected.<br>Add one in config.json<br>and restart.</div>';
+    return;
+  }
+  sl.innerHTML = servers.map(srv => {
+    const toolsHtml = srv.tools.slice(0, 6)
+      .map(t => '<div class="sc-tool">' + esc(srv.name) + '__' + esc(t) + '</div>')
+      .join('');
+    const moreHtml = srv.tools.length > 6
+      ? '<div class="sc-more">+' + (srv.tools.length - 6) + ' more</div>'
+      : '';
+    return `
+      <div class="sc" id="srv-${esc(srv.name)}" onclick="toggleSrv('${esc(srv.name)}')">
+        <div class="sc-head">
+          <span class="sc-name">${esc(srv.name)}</span>
+          <div class="sc-status"><span class="sdot on"></span>connected</div>
+        </div>
+        <div class="sc-count">Tools: <span>${srv.tools.length}</span></div>
+        <div class="sc-tools" id="st-${esc(srv.name)}">
+          ${toolsHtml}${moreHtml}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Tool registry ─────────────────────────────────────────────
+function filterTools(q) {
+  q = q.toLowerCase();
+  document.querySelectorAll('#tlist .trow').forEach(r => {
+    const nm = r.querySelector('.tname').textContent.toLowerCase();
+    r.style.display = (!q || nm.includes(q)) ? 'flex' : 'none';
+  });
+  document.querySelectorAll('#tlist .tglabel').forEach(g => {
+    if (!q) { g.style.display = ''; return; }
+    let el = g.nextElementSibling, vis = false;
+    while (el && !el.classList.contains('tglabel')) {
+      if (el.classList.contains('trow') && el.style.display !== 'none') vis = true;
+      el = el.nextElementSibling;
+    }
+    g.style.display = vis ? '' : 'none';
+  });
+}
+
+async function loadTools() {
+  try {
+    const res = await fetch('/api/tools');
+    if (!res.ok) return;
+    const tools = await res.json();
+    renderTools(tools);
+  } catch(e) {
+    console.warn('[tools]', e);
+  }
+}
+
+function renderTools(tools) {
+  const grouped = {};
+  tools.forEach(t => {
+    let key;
+    if (t.category === 'mcp') {
+      const server = t.name.split('__')[0];
+      key = 'MCP · ' + server;
+    } else {
+      key = t.category.charAt(0).toUpperCase() + t.category.slice(1);
+    }
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(t);
+  });
+
+  // Built-in groups first, MCP groups second, alphabetical within each
+  const keys = Object.keys(grouped).sort((a, b) => {
+    const aM = a.startsWith('MCP'), bM = b.startsWith('MCP');
+    if (aM !== bM) return aM ? 1 : -1;
+    return a.localeCompare(b);
+  });
+
+  const tlist = document.getElementById('tlist');
+  tlist.innerHTML = keys.map(key =>
+    '<div class="tglabel">' + esc(key) + '</div>' +
+    grouped[key].map(t =>
+      '<div class="trow">' +
+        '<span class="tname">' + esc(t.name) + '</span>' +
+        '<span class="tcat ' + (t.category === 'mcp' ? 'mc' : 'bi') + '">' + esc(t.category) + '</span>' +
+      '</div>'
+    ).join('')
+  ).join('');
+}
+
+// ── Chat ──────────────────────────────────────────────────────
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+}
+
+function appendMsg(role, html) {
+  const m = document.getElementById('msgs');
+  const d = document.createElement('div');
+  d.className = 'msg ' + role;
+  d.innerHTML = html;
+  m.appendChild(d);
+  m.scrollTop = m.scrollHeight;
+  return d;
+}
+
+async function sendMsg() {
+  const inp = document.getElementById('cinput');
+  const txt = inp.value.trim();
+  if (!txt || isSending) return;
+  inp.value = '';
+  isSending = true;
+  setInputEnabled(false);
+
+  appendMsg('u', '<div class="mmeta">You</div><div class="mbubble">' + esc(txt) + '</div>');
+
+  const ty = appendMsg('a',
+    '<div class="mmeta">Penguin</div>' +
+    '<div class="typing-wrap"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>'
+  );
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: txt }),
+    });
+    ty.remove();
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    // Filter out empty strings (narration separator blanks), join with newlines
+    const lines = (data.responses || []).filter(r => r !== null && r !== undefined);
+    const text = lines.join('\n').trim();
+
+    appendMsg('a',
+      '<div class="mmeta">Penguin</div>' +
+      '<div class="mbubble">' + esc(text).replace(/\n/g, '<br>') + '</div>'
+    );
+
+    // Refresh status counters (memory count changes)
+    loadStatus();
+  } catch(e) {
+    ty.remove();
+    appendMsg('a',
+      '<div class="mmeta">Penguin</div>' +
+      '<div class="mbubble" style="color:var(--red)">' +
+        'Error: ' + esc(String(e)) + '<br>' +
+        '<span style="color:var(--t3);font-size:11px">Is server.py still running?</span>' +
+      '</div>'
+    );
+  } finally {
+    isSending = false;
+    setInputEnabled(true);
+    document.getElementById('cinput').focus();
+  }
+}
+
+// ── Reset ─────────────────────────────────────────────────────
+async function resetChat() {
+  try { await fetch('/api/reset', { method: 'POST' }); } catch(e) {}
+  const m = document.getElementById('msgs');
+  m.innerHTML =
+    '<div class="msg a"><div class="mmeta">Penguin</div>' +
+    '<div class="mbubble">Conversation reset. Ready.</div></div>';
+}
+
+// ── Voice toggle ──────────────────────────────────────────────
+function toggleVoice() {
+  voiceOn = !voiceOn;
+  const vb = document.getElementById('voice-btn');
+  const ib = document.getElementById('vbtn');
+  if (voiceOn) {
+    vb.classList.add('active');
+    ib.style.borderColor = 'var(--green)';
+    ib.style.color = 'var(--green)';
+  } else {
+    vb.classList.remove('active');
+    ib.style.borderColor = '';
+    ib.style.color = '';
+  }
+}
+
+// ── Add-server modal ──────────────────────────────────────────
+let _pendingServer = null;
+
+async function openModal() {
+  // First, check if npx is installed
+  try {
+    const res = await fetch('/api/mcp/check-npx');
+    const data = await res.json();
+    
+    if (!data.installed) {
+      // Show npx missing modal instead
+      showNpxMissingModal();
+      return;
+    }
+    
+    // npx is installed, proceed to catalog
+    document.getElementById('modal').classList.add('open');
+    await loadMCPCatalog();
+  } catch(e) {
+    console.error('Error checking npx:', e);
+    // If check fails, still show catalog (fail open)
+    document.getElementById('modal').classList.add('open');
+    await loadMCPCatalog();
+  }
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+function showNpxMissingModal() {
+  document.getElementById('npx-missing-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('npx-missing-modal').classList.add('open'), 10);
+}
+
+function closeNpxMissingModal() {
+  document.getElementById('npx-missing-modal').classList.remove('open');
+  setTimeout(() => document.getElementById('npx-missing-modal').style.display = 'none', 300);
+}
+
+function openNodeJsDownload() {
+  window.open('https://nodejs.org/en/download/', '_blank');
+  closeNpxMissingModal();
+}
+
+async function loadMCPCatalog() {
+  const listEl = document.getElementById('mcp-catalog-list');
+  listEl.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:8px 4px">Loading catalog…</div>';
+  
+  try {
+    const res = await fetch('/api/mcp/catalog');
+    if (!res.ok) throw new Error('Failed to load catalog');
+    const data = await res.json();
+    renderMCPCatalog(data.servers);
+  } catch(e) {
+    listEl.innerHTML = '<div style="font-size:11px;color:var(--red);padding:8px 4px">Failed to load catalog: ' + esc(String(e)) + '</div>';
+  }
+}
+
+function renderMCPCatalog(servers) {
+  const listEl = document.getElementById('mcp-catalog-list');
+  
+  if (!servers || servers.length === 0) {
+    listEl.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:8px 4px">No servers available.</div>';
+    return;
+  }
+  
+  listEl.innerHTML = servers.map(srv => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--bdr);border-radius:6px;margin-bottom:8px;background:var(--card)">
+      <div style="flex:1">
+        <div style="font-size:13px;color:var(--t1);font-weight:500;margin-bottom:4px">${esc(srv.display_name)}</div>
+        <div style="font-size:11px;color:var(--t2);line-height:1.5">${esc(srv.description)}</div>
+      </div>
+      <button onclick="addMCPServer('${esc(srv.name)}', ${srv.requires_api_key})" 
+              style="padding:6px 14px;background:var(--accent);border:none;border-radius:4px;color:#fff;font-family:var(--fd);font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;flex-shrink:0">
+        + add
+      </button>
+    </div>
+  `).join('');
+}
+
+function addMCPServer(serverName, requiresApiKey) {
+  _pendingServer = serverName;
+  
+  if (requiresApiKey) {
+    // Show API key input modal
+    openApiKeyModal(serverName);
+  } else {
+    // Add directly without API key
+    submitMCPServer(serverName, '');
+  }
+}
+
+function openApiKeyModal(serverName) {
+  // Find server in catalog to get label
+  fetch('/api/mcp/catalog')
+    .then(res => res.json())
+    .then(data => {
+      const srv = data.servers.find(s => s.name === serverName);
+      if (srv) {
+        document.getElementById('api-key-title').textContent = `Add ${srv.display_name}`;
+        document.getElementById('api-key-label').textContent = srv.api_key_label || 'This server requires an API key.';
+      }
+    });
+  
+  document.getElementById('api-key-input').value = '';
+  document.getElementById('api-key-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('api-key-modal').classList.add('open'), 10);
+}
+
+function closeApiKeyModal() {
+  document.getElementById('api-key-modal').classList.remove('open');
+  setTimeout(() => document.getElementById('api-key-modal').style.display = 'none', 300);
+  _pendingServer = null;
+}
+
+function submitApiKey() {
+  const apiKey = document.getElementById('api-key-input').value.trim();
+  if (!apiKey) {
+    alert('Please enter an API key');
+    return;
+  }
+  submitMCPServer(_pendingServer, apiKey);
+}
+
+async function submitMCPServer(serverName, apiKey) {
+  closeApiKeyModal();
+  closeModal();
+  
+  try {
+    const res = await fetch('/api/mcp/add', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        server_name: serverName,
+        api_key: apiKey
+      })
+    });
+    
+    const data = await res.json();
+    
+    if (!res.ok) {
+      alert('Error adding server: ' + (data.error || 'Unknown error'));
+      return;
+    }
+    
+    // Show restart confirmation modal
+    document.getElementById('restart-server-name').textContent = serverName;
+    document.getElementById('restart-modal').style.display = 'flex';
+    setTimeout(() => document.getElementById('restart-modal').classList.add('open'), 10);
+    
+  } catch(e) {
+    alert('Error adding server: ' + String(e));
+  }
+}
+
+function closeRestartModal() {
+  document.getElementById('restart-modal').classList.remove('open');
+  setTimeout(() => document.getElementById('restart-modal').style.display = 'none', 300);
+}
+
+async function restartNow() {
+  closeRestartModal();
+  
+  // Show loading overlay
+  const overlay = document.getElementById('boot-overlay');
+  overlay.style.display = 'flex';
+  overlay.classList.remove('hidden');
+  document.getElementById('boot-status').textContent = 'Restarting Penguin…';
+  
+  try {
+    await fetch('/api/restart', { method: 'POST' });
+    
+    // Wait a moment for server to start shutting down
+    await new Promise(r => setTimeout(r, 1000));
+    
+    // Poll until server is back up
+    let attempts = 0;
+    while (attempts < 60) {
+      try {
+        const res = await fetch('/api/ready');
+        if (res.ok) {
+          // Server is back! Reload the page
+          window.location.reload();
+          return;
+        }
+      } catch(e) {
+        // Server not up yet
+      }
+      attempts++;
+      await new Promise(r => setTimeout(r, 1000));
+    }
+    
+    // Timeout - suggest manual reload
+    document.getElementById('boot-status').textContent = 'Restart timed out. Please refresh manually.';
+    document.getElementById('boot-status').style.color = 'var(--red)';
+    
+  } catch(e) {
+    document.getElementById('boot-status').textContent = 'Restart failed: ' + String(e);
+    document.getElementById('boot-status').style.color = 'var(--red)';
+  }
+}
+
+// ── LLM picker ───────────────────────────────────────────────
+let _allModels = [];
+let _currentModel = '';
+
+async function openLLMPicker() {
+  document.getElementById('llm-modal').classList.add('open');
+  document.getElementById('llm-status-msg').textContent = '';
+  document.getElementById('llm-status-msg').className = 'llm-status-msg';
+  document.getElementById('llm-search').value = '';
+  document.getElementById('model-list').innerHTML =
+    '<div style="font-size:11px;color:var(--t3);padding:8px 4px">Loading…</div>';
+
+  // Fetch current model and available models in parallel
+  const [statusRes, modelsRes] = await Promise.allSettled([
+    fetch('/api/status').then(r => r.json()),
+    fetch('/api/llm/models').then(r => r.json()),
+  ]);
+
+  if (statusRes.status === 'fulfilled') {
+    _currentModel = statusRes.value.llm || '';
+  }
+
+  if (modelsRes.status === 'fulfilled') {
+    _allModels = modelsRes.value.models || [];
+    const sub = _allModels.length
+      ? `${_allModels.length} model${_allModels.length !== 1 ? 's' : ''} available · current: ${_currentModel || 'none'}`
+      : 'No Ollama models found — is Ollama running?';
+    document.getElementById('llm-modal-sub').textContent = sub;
+    renderModels(_allModels);
+  } else {
+    document.getElementById('llm-modal-sub').textContent = 'Could not reach Ollama.';
+    document.getElementById('model-list').innerHTML =
+      '<div style="font-size:11px;color:var(--t3);padding:8px 4px">Is Ollama running on localhost:11434?</div>';
+  }
+}
+
+function closeLLMPicker() {
+  document.getElementById('llm-modal').classList.remove('open');
+}
+document.getElementById('llm-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeLLMPicker();
+});
+
+function filterModels(q) {
+  q = q.toLowerCase();
+  const filtered = q ? _allModels.filter(m => m.name.toLowerCase().includes(q)) : _allModels;
+  renderModels(filtered);
+}
+
+function _isActiveModel(modelName) {
+  // _currentModel is like "ollama (qwen2.5:14b)" — extract the part in parens
+  const m = _currentModel.match(/\((.+)\)$/);
+  const current = m ? m[1].trim() : _currentModel.trim();
+  return current === modelName;
+}
+
+function renderModels(models) {
+  const list = document.getElementById('model-list');
+  if (!models.length) {
+    list.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:8px 4px">No models match.</div>';
+    return;
+  }
+
+  const grouped = {};
+  models.forEach(m => {
+    const g = m.provider || 'ollama';
+    if (!grouped[g]) grouped[g] = [];
+    grouped[g].push(m);
+  });
+
+  const checkSvg = `<svg class="mi-check" viewBox="0 0 14 14" fill="none">
+    <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>`;
+
+  // Escape model name for use as onclick arg (handles colons, slashes, etc.)
+  const safeId = n => n.replace(/[^a-zA-Z0-9]/g, '_');
+
+  list.innerHTML = Object.entries(grouped).map(([prov, items]) =>
+    `<div class="model-group-label">${esc(prov)}</div>` +
+    items.map(m => {
+      const active = _isActiveModel(m.name);
+      return `<div class="model-item${active ? ' active' : ''}" id="mi-${safeId(m.name)}"
+        onclick="selectModel('${esc(prov)}', '${esc(m.name)}')">
+        ${active ? checkSvg : '<div class="mi-check"></div>'}
+        <span class="mi-name">${esc(m.name)}</span>
+        <span class="mi-size">${esc(m.size)}</span>
+        <span class="mi-prov">${esc(prov)}</span>
+      </div>`;
+    }).join('')
+  ).join('');
+}
+
+async function selectModel(provider, model) {
+  const statusEl = document.getElementById('llm-status-msg');
+  statusEl.className = 'llm-status-msg';
+  statusEl.textContent = `Switching to ${model}…`;
+
+  // Dim all items, mark selected as loading
+  document.querySelectorAll('.model-item').forEach(el => el.classList.add('loading'));
+  const target = document.getElementById('mi-' + model);
+  if (target) target.classList.remove('loading');
+
+  try {
+    const res = await fetch('/api/llm/set', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({provider, model}),
+    });
+    const d = await res.json();
+
+    document.querySelectorAll('.model-item').forEach(el => el.classList.remove('loading'));
+
+    if (!res.ok || d.needs_restart) {
+      statusEl.className = 'llm-status-msg err';
+      statusEl.innerHTML =
+        esc(d.error || 'Switch failed.') +
+        ' &nbsp;<button onclick="closeLLMPicker()" style="' +
+        'background:var(--red);border:none;color:#fff;padding:3px 10px;' +
+        'border-radius:3px;font-family:var(--fd);font-size:9px;letter-spacing:.08em;' +
+        'text-transform:uppercase;cursor:pointer">Restart Penguin</button>';
+      return;
+    }
+
+    // Pull fresh status from server to confirm what actually changed
+    await loadStatus();
+
+    // Update local tracking and re-render checkmarks
+    _currentModel = d.llm || model;
+    statusEl.className = 'llm-status-msg ok';
+    statusEl.textContent = '✓ Active: ' + (d.llm || model);
+    renderModels(_allModels);
+
+    setTimeout(closeLLMPicker, 1400);
+  } catch(e) {
+    document.querySelectorAll('.model-item').forEach(el => el.classList.remove('loading'));
+    statusEl.className = 'llm-status-msg err';
+    statusEl.textContent = 'Error: ' + String(e);
+  }
+}
+
+// ── Start ─────────────────────────────────────────────────────
+setInputEnabled(false);
+boot();
+</script>
+</body>
+</html>

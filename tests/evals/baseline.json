@@ -1,0 +1,26 @@
+{
+  "cases": {
+    "disp.action_is_tools": true,
+    "disp.combined_is_mixed": true,
+    "disp.explain_is_chat": true,
+    "disp.fenced_output": true,
+    "disp.followup_uses_history": true,
+    "disp.garbage_falls_back_to_heuristic": true,
+    "disp.garbage_no_action_verb": true,
+    "disp.greeting_is_chat": true,
+    "disp.invalid_mode_defaults_chat": true,
+    "plan.chatty_preamble": true,
+    "plan.create_file_with_name": true,
+    "plan.fenced_output": true,
+    "plan.list_simple": true,
+    "plan.malformed_step_skipped": true,
+    "plan.multi_step": true,
+    "plan.scan_with_mode": true,
+    "plan.web_search_phrasal": true,
+    "regress.empty_array_returns_none": true,
+    "regress.plan_is_list_not_object": true,
+    "regress.preserve_path_case": true
+  },
+  "passing": 20,
+  "total": 20
+}

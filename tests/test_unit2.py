@@ -1,0 +1,26 @@
+import sys
+from pathlib import Path
+
+_project_root = Path(__file__).resolve().parent
+sys.path.insert(0, str(_project_root))
+
+from modules.loader import discover_modules
+
+print("Testing module loader...")
+modules = discover_modules(str(_project_root / "modules"))
+
+print(f"\nDiscovered {len(modules)} modules:")
+for mod_id, mod in modules.items():
+    print(f"  - {mod_id}: {mod.manifest.name} v{mod.manifest.version}")
+    print(f"    {mod.manifest.description}")
+    print(f"    Category: {mod.manifest.category}")
+
+if "core" in modules:
+    print("\nCore module test:")
+    core = modules["core"]
+    print(f"  System prompt length: {len(core.system_prompt)} chars")
+    print(f"  Has get_tools: {hasattr(core, 'get_tools')}")
+    print("\nUnit 2: PASSED")
+else:
+    print("\nERROR: core module not found")
+    sys.exit(1)

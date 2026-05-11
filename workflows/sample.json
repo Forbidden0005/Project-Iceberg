@@ -1,0 +1,8 @@
+{
+  "name": "cleanup_temp",
+  "interval": 10,
+  "condition": "file_exists temp.txt",
+  "actions": [
+    "delete file temp.txt"
+  ]
+}
