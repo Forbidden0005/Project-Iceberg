@@ -1,6 +1,22 @@
-# Project Iceberg
+<div align="center">
 
-Local-first AI assistant with MCP support. Runs on your machine, connects to multiple LLM backends, and executes tools based on natural language.
+```
+ ___           _           _     ___          _                   
+| _ \_ _ ___ (_)___ _ ___| |_  |_ _|__ ___| |__  ___ _ _ __ _ 
+|  _/ '_/ _ \| / -_) / / _` |   | |/ _/ -_) '_ \/ -_) '_/ _` |
+|_| |_| \___// \___\_\_\__,_|  |___\__\___|_.__/\___|_| \__, |
+           |__/                                          |___/ 
+```
+
+# 🧊 Project Iceberg
+
+*Local-first AI assistant with multi-LLM support and MCP extensibility*
+
+**What you see is just the tip of the iceberg.**
+
+</div>
+
+---
 
 ## Quick Start
 
