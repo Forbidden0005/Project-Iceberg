@@ -1,0 +1,15 @@
+{
+  "llm_provider": "ollama",
+  "ollama_model": "gemma4:e4b",
+  "mcp_servers": {
+    "example-filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "."
+      ],
+      "env": {}
+    }
+  }
+}

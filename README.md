@@ -2,7 +2,28 @@
 
 Local AI agent that takes natural language. Chats, runs tools on your machine, or does both depending on what you ask.
 
-## Quick start
+## Quick Start
+
+### Web UI (Recommended)
+
+**Windows:**
+```bash
+Launch.bat
+```
+
+**Mac/Linux:**
+```bash
+pip install -r requirements.txt
+python server.py
+```
+
+Opens browser at `http://localhost:5000` with a chat interface. Includes:
+- One-click MCP server installation
+- Voice mode support
+- Tool usage visualization
+- LLM provider switching
+
+### Command Line
 
 ```bash
 pip install -r requirements.txt
@@ -16,6 +37,20 @@ No configuration needed. On startup it auto-detects whichever LLM backend is run
 3. **Anthropic** (cloud) — if `ANTHROPIC_API_KEY` is set
 
 If nothing is reachable, it falls back to regex-only mode and still runs tool commands.
+
+## MCP (Model Context Protocol) Support
+
+Penguin supports MCP servers for extended functionality. The web UI includes a one-click installer for popular MCP servers:
+
+- **Filesystem** — Local file operations
+- **Memory** — Persistent knowledge graph
+- **Fetch** — Web content retrieval
+- **GitHub** — Repository management (requires API key)
+- **PostgreSQL/SQLite** — Database access
+- **Puppeteer** — Browser automation
+- And more...
+
+MCP servers require Node.js/npx. The launcher checks dependencies automatically.
 
 ## How natural language works
 
