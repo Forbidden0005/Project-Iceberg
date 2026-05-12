@@ -56,7 +56,7 @@ If nothing is reachable, it falls back to regex-only mode and still runs tool co
 
 ## MCP (Model Context Protocol) Support
 
-Penguin supports MCP servers for extended functionality. The web UI includes a one-click installer for popular MCP servers:
+Project Iceberg supports MCP servers for extended functionality. The web UI includes a one-click installer for popular MCP servers:
 
 - **Filesystem** — Local file operations
 - **Memory** — Persistent knowledge graph

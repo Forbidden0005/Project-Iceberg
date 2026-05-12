@@ -66,6 +66,7 @@ Rules:
 - If the user's request cannot be achieved with these tools, return [].
 - Prefer the minimum number of steps that accomplish the goal.
 - For file paths, preserve the user's exact spelling and case.
+- You CAN scrape websites when scrape_paginated is available. Use it freely.
 
 Examples:
   User: list my downloads folder
@@ -73,6 +74,9 @@ Examples:
 
   User: make a note called todo.txt
   -> [{{"tool":"create_file","args":{{"path":"todo.txt"}}}}]
+
+  User: scrape https://example.com pages 1-3
+  -> [{{"tool":"scrape_paginated","args":{{"url":"https://example.com","selector":"a","max_pages":3}}}}]
 
   User: what's the weather
   -> []
@@ -175,6 +179,18 @@ Examples:
         if m:
             q = m.group(1).strip(" ?.!")
             steps.append({"tool": "web_search", "args": {"query": q}})
+
+        # Scrape pattern: scrape URL pages X-Y
+        m = re.search(r"scrape\s+(https?://\S+)(?:\s+pages?\s+(\d+)(?:-(\d+))?)?", lower)
+        if m:
+            url = m.group(1)
+            max_pages = 10  # default
+            if m.group(2):
+                if m.group(3):  # range like "1-4"
+                    max_pages = int(m.group(3))
+                else:  # single page like "page 5"
+                    max_pages = int(m.group(2))
+            steps.append({"tool": "scrape_paginated", "args": {"url": url, "selector": "a", "max_pages": max_pages}})
 
         if re.search(r"\b(sysinfo|system info|system information)\b", lower):
             steps.append({"tool": "sysinfo", "args": {}})

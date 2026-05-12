@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Penguin</title>
+<title>Iceberg</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
@@ -92,6 +92,8 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
 }
 .tbtn:hover{border-color:var(--accent);color:var(--accent2)}
 .tbtn.active{border-color:var(--green);color:var(--green)}
+.tbtn.danger{border-color:rgba(255,68,85,0.4);color:rgba(255,68,85,0.6)}
+.tbtn.danger:hover{border-color:var(--red);color:var(--red)}
 
 /* ── LEFT PANEL ─────────────────────────────────────────── */
 .lp{
@@ -142,8 +144,8 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
 .sc-desc{font-size:11px;color:var(--t2);margin-bottom:7px;line-height:1.4}
 
 .sc-count{
-  font-family:var(--fd);font-size:9px;letter-spacing:0.1em;
-  text-transform:uppercase;color:var(--t3);
+  font-family:var(--fd);font-size:11px;letter-spacing:0.08em;
+  text-transform:uppercase;color:var(--t2);
 }
 .sc-count span{color:var(--accent2)}
 
@@ -321,8 +323,8 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
   display:flex;align-items:center;justify-content:center;
 }
 .lb span{
-  font-family:var(--fd);font-size:9px;color:var(--t3);
-  letter-spacing:0.15em;text-transform:uppercase;
+  font-family:var(--fd);font-size:10px;color:var(--t3);
+  letter-spacing:0.12em;text-transform:uppercase;
 }
 
 .rb{
@@ -332,8 +334,8 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
   flex-direction:column;gap:3px;
 }
 .rb span{
-  font-family:var(--fd);font-size:9px;color:var(--t3);
-  letter-spacing:0.12em;text-transform:uppercase;
+  font-family:var(--fd);font-size:10px;color:var(--t3);
+  letter-spacing:0.1em;text-transform:uppercase;
 }
 .rb .ver{color:var(--t2);font-size:10px}
 
@@ -485,7 +487,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
       <circle cx="15.5" cy="7.2" r=".85" fill="#070c1a"/>
       <polygon points="13,9.5 11.5,12 14.5,12" fill="#ffaa00"/>
     </svg>
-    Penguin
+    Iceberg
   </div>
   <div class="boot-bar"><div class="boot-fill"></div></div>
   <div class="boot-status" id="boot-status">Connecting to backend…</div>
@@ -512,7 +514,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
   <div class="modal">
     <div class="modal-title">Connect MCP Server</div>
     <p style="font-size:12px;color:var(--t2);margin-bottom:14px;line-height:1.6">
-      Select a server to add. Penguin will restart after adding.
+      Select a server to add. Iceberg will restart after adding.
     </p>
     <div id="mcp-catalog-list" style="max-height:400px;overflow-y:auto">
       <div style="font-size:11px;color:var(--t3);padding:8px 4px">Loading catalog…</div>
@@ -542,7 +544,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
   <div class="modal">
     <div class="modal-title">Restart Required</div>
     <p style="font-size:12px;color:var(--t2);margin-bottom:14px;line-height:1.6">
-      Server added successfully! Penguin needs to restart to load the new MCP server.
+      Server added successfully! Iceberg needs to restart to load the new MCP server.
     </p>
     <p style="font-size:12px;color:var(--green);margin-bottom:14px">
       ✓ <span id="restart-server-name"></span> added to config.json
@@ -593,7 +595,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
       <circle cx="15.5" cy="7.2" r=".85" fill="#0b1124"/>
       <polygon points="13,9.5 11.5,12 14.5,12" fill="#ffaa00"/>
     </svg>
-    Penguin
+    Iceberg
   </div>
 
   <div class="pill llm-pill-btn" onclick="openLLMPicker()" title="Click to switch model">
@@ -612,7 +614,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
   </div>
 
   <div class="pill">
-    <span class="pdot b"></span>
+    <span class="pdot off" id="tools-dot"></span>
     <span>Tools</span>
     <span class="pval" id="tools-val">—</span>
   </div>
@@ -626,7 +628,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
 
   <button class="tbtn" id="voice-btn" onclick="toggleVoice()">⬤ voice</button>
   <button class="tbtn" onclick="openModal()">+ server</button>
-  <button class="tbtn" id="reset-btn" onclick="resetChat()">reset</button>
+  <button class="tbtn danger" id="reset-btn" onclick="resetChat()">reset</button>
 </header>
 
 <!-- ── LEFT PANEL ── -->
@@ -639,7 +641,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
   <div class="plabel" style="margin-top:2px">Add Server</div>
   <button class="add-btn" onclick="openModal()">+ connect mcp server</button>
   <div style="flex:1"></div>
-  <div style="padding:4px 4px 0;font-family:var(--fd);font-size:9px;color:var(--t3);letter-spacing:0.12em;text-transform:uppercase;line-height:1.8">
+  <div style="padding:4px 4px 0;font-family:var(--fd);font-size:10px;color:var(--t3);letter-spacing:0.1em;text-transform:uppercase;line-height:1.8">
     local-first · private<br>offline-capable
   </div>
 </aside>
@@ -648,7 +650,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
 <main class="cc">
   <div class="msgs" id="msgs">
     <div class="msg a">
-      <div class="mmeta">Penguin</div>
+      <div class="mmeta">Iceberg</div>
       <div class="mbubble">
         <span id="welcome-msg" style="color:var(--t2)">Connecting to backend…</span>
       </div>
@@ -685,7 +687,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
 </div>
 
 <div class="rb">
-  <span class="ver">PENGUIN</span>
+  <span class="ver">ICEBERG</span>
   <span>v2.0 · mcp ready</span>
 </div>
 
@@ -765,6 +767,7 @@ async function loadStatus() {
     document.getElementById('llm-dot').className = 'pdot ' + (d.llm_active ? 'g' : 'off');
     document.getElementById('mcp-dot').className = 'pdot ' + (d.mcp_servers.length > 0 ? 'g' : 'off');
     document.getElementById('mcp-val').textContent = d.mcp_servers.length + ' connected';
+    document.getElementById('tools-dot').className = 'pdot ' + (d.tools_count > 0 ? 'g' : 'off');
     document.getElementById('tools-val').textContent = d.tools_count + ' registered';
     document.getElementById('memory-val').textContent = d.memory_count + ' entr' + (d.memory_count === 1 ? 'y' : 'ies');
 
@@ -884,7 +887,7 @@ function renderTools(tools) {
   tlist.innerHTML = keys.map(key =>
     '<div class="tglabel">' + esc(key) + '</div>' +
     grouped[key].map(t =>
-      '<div class="trow">' +
+      '<div class="trow" title="' + esc(t.name) + '">' +
         '<span class="tname">' + esc(t.name) + '</span>' +
         '<span class="tcat ' + (t.category === 'mcp' ? 'mc' : 'bi') + '">' + esc(t.category) + '</span>' +
       '</div>'
@@ -918,7 +921,7 @@ async function sendMsg() {
   appendMsg('u', '<div class="mmeta">You</div><div class="mbubble">' + esc(txt) + '</div>');
 
   const ty = appendMsg('a',
-    '<div class="mmeta">Penguin</div>' +
+    '<div class="mmeta">Iceberg</div>' +
     '<div class="typing-wrap"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>'
   );
 
@@ -938,7 +941,7 @@ async function sendMsg() {
     const text = lines.join('\n').trim();
 
     appendMsg('a',
-      '<div class="mmeta">Penguin</div>' +
+      '<div class="mmeta">Iceberg</div>' +
       '<div class="mbubble">' + esc(text).replace(/\n/g, '<br>') + '</div>'
     );
 
@@ -947,7 +950,7 @@ async function sendMsg() {
   } catch(e) {
     ty.remove();
     appendMsg('a',
-      '<div class="mmeta">Penguin</div>' +
+      '<div class="mmeta">Iceberg</div>' +
       '<div class="mbubble" style="color:var(--red)">' +
         'Error: ' + esc(String(e)) + '<br>' +
         '<span style="color:var(--t3);font-size:11px">Is server.py still running?</span>' +
@@ -962,10 +965,11 @@ async function sendMsg() {
 
 // ── Reset ─────────────────────────────────────────────────────
 async function resetChat() {
+  if (!confirm('Reset the conversation? This cannot be undone.')) return;
   try { await fetch('/api/reset', { method: 'POST' }); } catch(e) {}
   const m = document.getElementById('msgs');
   m.innerHTML =
-    '<div class="msg a"><div class="mmeta">Penguin</div>' +
+    '<div class="msg a"><div class="mmeta">Iceberg</div>' +
     '<div class="mbubble">Conversation reset. Ready.</div></div>';
 }
 
@@ -1157,7 +1161,7 @@ async function restartNow() {
   const overlay = document.getElementById('boot-overlay');
   overlay.style.display = 'flex';
   overlay.classList.remove('hidden');
-  document.getElementById('boot-status').textContent = 'Restarting Penguin…';
+  document.getElementById('boot-status').textContent = 'Restarting Iceberg…';
   
   try {
     await fetch('/api/restart', { method: 'POST' });
@@ -1311,7 +1315,7 @@ async function selectModel(provider, model) {
         ' &nbsp;<button onclick="closeLLMPicker()" style="' +
         'background:var(--red);border:none;color:#fff;padding:3px 10px;' +
         'border-radius:3px;font-family:var(--fd);font-size:9px;letter-spacing:.08em;' +
-        'text-transform:uppercase;cursor:pointer">Restart Penguin</button>';
+        'text-transform:uppercase;cursor:pointer">Restart Iceberg</button>';
       return;
     }
 

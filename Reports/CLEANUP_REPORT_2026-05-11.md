@@ -1,4 +1,4 @@
-# Codebase Cleanup Report — Penguin
+# Codebase Cleanup Report — Project Iceberg
 
 **Date**: 2026-05-11  
 **Mode**: Safe  
@@ -117,7 +117,7 @@ The following files received formatting and style improvements:
 
 ✅ **Cleanup Status: SUCCESSFUL**
 
-The Penguin codebase passed all automated hygiene checks. Code is well-formatted, imports are organized, and no dead code or unused imports were found. The few remaining lint warnings are intentional design patterns commonly used in Flask applications.
+The Project Iceberg codebase passed all automated hygiene checks. Code is well-formatted, imports are organized, and no dead code or unused imports were found. The few remaining lint warnings are intentional design patterns commonly used in Flask applications.
 
 **Next Steps:**
 - Optional: Address remaining style warnings if desired

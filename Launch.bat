@@ -17,24 +17,14 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
-for /f "tokens=*" %%v in ('python --version 2^>^&1') do set PYTHON_VER=%%v
-echo [ok] %PYTHON_VER%
+python --version
+echo.
 
 :: ── Node.js/npx check (for MCP servers) ──────────────────────
-echo [checking] Node.js / npx (for MCP servers)...
-npx --version >nul 2>&1
-if errorlevel 1 (
-    echo [warning] npx not found - MCP servers will not work
-    echo           Install Node.js from: https://nodejs.org/
-    echo           You can continue without it, but MCP features will be disabled.
-    echo.
-    choice /C YN /M "Continue anyway"
-    if errorlevel 2 exit /b 1
-    echo.
-) else (
-    for /f "tokens=*" %%v in ('npx --version 2^>^&1') do set NPX_VER=%%v
-    echo [ok] npx %NPX_VER%
-)
+:: Skipped - npx check can hang in batch files on some systems
+:: MCP servers are optional and will auto-connect if npx is available
+echo [skip] Node.js / npx check (optional - MCP servers will try to connect on startup)
+echo.
 
 :: ── Python package dependency check ──────────────────────────
 echo [checking] Python packages from requirements.txt...

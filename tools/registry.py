@@ -10,6 +10,7 @@ Each entry:
 
 from tools.file_tools import append_file, create_file, delete_file, list_dir, move_file, read_file
 from tools.scan_tools import scan
+from tools.scraper_tools import scrape_paginated
 from tools.web_tools import web_search
 
 TOOL_REGISTRY = {
@@ -74,6 +75,19 @@ TOOL_REGISTRY = {
         "description": "Search the web via DuckDuckGo.",
         "category": "web",
         "args": [{"name": "query", "required": True, "description": "Search query."}],
+    },
+    "scrape_paginated": {
+        "func": scrape_paginated,
+        "description": "Scrape data from paginated websites. Handles button clicks, URL patterns, and infinite scroll.",
+        "category": "web",
+        "args": [
+            {"name": "url", "required": True, "description": "Starting URL to scrape"},
+            {"name": "selector", "required": True, "description": "CSS selector for elements to extract"},
+            {"name": "extract", "required": False, "description": "What to extract: 'href', 'text', 'html', or attribute name"},
+            {"name": "pagination", "required": False, "description": "Pagination type: 'auto', 'button', 'url', 'scroll'"},
+            {"name": "max_pages", "required": False, "description": "Maximum pages to scrape (default: 10)"},
+            {"name": "next_button", "required": False, "description": "CSS selector for next button"},
+        ],
     },
 }
 

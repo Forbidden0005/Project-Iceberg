@@ -4,10 +4,13 @@ requests>=2.31.0
 # Web UI server (python server.py)
 flask>=3.0.0
 
-# MCP (Model Context Protocol) - connects Penguin to external tool servers.
+# MCP (Model Context Protocol) - connects Project Iceberg to external tool servers.
 # Install: pip install mcp
 # Docs:    https://modelcontextprotocol.io
 mcp>=1.0.0
+
+# Web scraping (for paginated sites, JS execution, browser automation)
+playwright>=1.40.0
 
 # Voice mode (optional - install with: pip install -r requirements.txt)
 # Comment these out if you don't need voice mode and they fail to install.
