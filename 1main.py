@@ -71,7 +71,9 @@ def _cmd_memory(agent: OrchestratorAgent) -> bool:
             choice = input("  Deduplicate memory? [y/N] ").strip().lower()
             if choice in {"y", "yes"}:
                 removed = agent.long_memory.deduplicate()
-                print(f"  Removed {removed} duplicate(s). Now {len(agent.long_memory.data)} entries.")
+                print(
+                    f"  Removed {removed} duplicate(s). Now {len(agent.long_memory.data)} entries."
+                )
         except (EOFError, KeyboardInterrupt):
             print()
     return True

@@ -12,10 +12,38 @@ mcp>=1.0.0
 # Web scraping (for paginated sites, JS execution, browser automation)
 playwright>=1.40.0
 
-# Voice mode (optional - install with: pip install -r requirements.txt)
-# Comment these out if you don't need voice mode and they fail to install.
-SpeechRecognition>=3.10.0
+# ---- ML / Memory -------------------------------------------------------
+
+# Semantic vector store for long-term memory.
+# Local embedded mode — no separate server needed.
+# Install: pip install chromadb
+chromadb>=0.5.0
+
+# nomic-embed-text embeddings are served via Ollama (no pip package needed).
+# Pull the model once: ollama pull nomic-embed-text
+# ChromaDB falls back to bag-of-words if Ollama is not running.
+
+# ---- Vision ------------------------------------------------------------
+
+# Required for capture_screen (screenshot capture) and image pre-processing.
+pillow>=10.0.0
+
+# Vision models are served via Ollama — no pip package needed.
+# Pull a model once (pick one):
+#   ollama pull moondream    # fast, ~1.7 GB — good for captions + Q&A
+#   ollama pull llava        # stronger reasoning, ~4 GB
+
+# ---- Voice mode --------------------------------------------------------
+
+# Local offline speech recognition (replaces cloud SpeechRecognition).
+# Install: pip install openai-whisper
+# Requires ffmpeg: https://ffmpeg.org/download.html
+#   Windows: winget install Gyan.FFmpeg  OR  choco install ffmpeg
+openai-whisper>=20231117
+
+# Text-to-speech (output only — works offline)
 pyttsx3>=2.90
+
 # pyaudio is required for microphone input. On Windows:
 #   pip install pipwin && pipwin install pyaudio
 # On Linux: sudo apt-get install portaudio19-dev python3-pyaudio

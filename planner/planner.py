@@ -13,7 +13,8 @@ import json
 import re
 from typing import Any, Optional
 
-from agent_core.constants import HISTORY_WINDOW_FOR_PLANNING, LLM_PLAN_MAX_TOKENS, LLM_PLAN_TEMPERATURE
+from agent_core.constants import (HISTORY_WINDOW_FOR_PLANNING,
+                                  LLM_PLAN_MAX_TOKENS, LLM_PLAN_TEMPERATURE)
 
 
 class Planner:
@@ -39,12 +40,9 @@ class Planner:
             return None
 
         if self.llm is not None:
-            # When an LLM is configured, its output is authoritative.
-            # Malformed/empty output means "no plan"; we do NOT silently
-            # fall through to regex parsing the raw user input (found via
-            # regress.plan_is_list_not_object eval - that leak caused the
-            # planner to plan actions from the user text when the LLM
-            # produced a bare object instead of an array).
+            # LLM output is authoritative.  If it returns [] or garbage, honour
+            # that refusal — never silently fall back to regex, which would let
+            # the planner invent actions the LLM explicitly declined to take.
             return self._llm_plan(text, history or [])
 
         return self._regex_plan(text)
@@ -162,7 +160,9 @@ Examples:
 
         m = re.search(r"append (.+?) (?:to )(\S+)", lower)
         if m:
-            steps.append({"tool": "append_file", "args": {"path": m.group(2), "content": m.group(1)}})
+            steps.append(
+                {"tool": "append_file", "args": {"path": m.group(2), "content": m.group(1)}}
+            )
 
         m = re.search(r"scan(?:\s+(\S+))?(?:\s+(low|medium|high))?", lower)
         if m and "scan" in lower:
@@ -175,22 +175,53 @@ Examples:
             p = m.group(1) if m else "."
             steps.append({"tool": "list_dir", "args": {"path": p}})
 
-        m = re.search(r"(?:search|google|look up)(?:\s+for)?\s+(.+)", lower)
-        if m:
-            q = m.group(1).strip(" ?.!")
-            steps.append({"tool": "web_search", "args": {"query": q}})
+        # GitHub-specific search: "search github for X" / "find on github X"
+        m_gh = re.search(
+            r"(?:search|find|look up|look for)\s+(?:on\s+)?github\s+(?:for\s+)?(.+)", lower
+        )
+        if m_gh:
+            q = m_gh.group(1).strip(" ?.!")
+            # Detect if the user wants code files vs. repositories
+            kind = "code" if re.search(r"\b(script|file|code|snippet)s?\b", q) else "repositories"
+            steps.append({"tool": "github_search", "args": {"query": q, "kind": kind}})
+        elif not steps:
+            m = re.search(r"(?:search|google|look up)(?:\s+for)?\s+(.+)", lower)
+            if m:
+                q = m.group(1).strip(" ?.!")
+                steps.append({"tool": "web_search", "args": {"query": q}})
 
-        # Scrape pattern: scrape URL pages X-Y
-        m = re.search(r"scrape\s+(https?://\S+)(?:\s+pages?\s+(\d+)(?:-(\d+))?)?", lower)
+        # Scrape pattern: scrape URL [selector "CSS"] [pages X-Y]
+        # Supports: scrape URL pages 1-3 selector "a.link"
+        #           scrape URL selector "a.link" pages 1-3
+        #           scrape URL selector "a.link"
+        #           scrape URL pages 1-3
+        m = re.search(r"scrape\s+(https?://\S+)(?:\s+(.+))?", lower)
         if m:
             url = m.group(1)
+            rest = m.group(2) or ""
+
+            # Extract selector if present
+            selector = "a"  # default
+            selector_match = re.search(r'selector\s+["\']([^"\']+)["\']', rest)
+            if selector_match:
+                selector = selector_match.group(1)
+                rest = re.sub(r'selector\s+["\'][^"\']+["\']', "", rest).strip()
+
+            # Extract pages if present
             max_pages = 10  # default
-            if m.group(2):
-                if m.group(3):  # range like "1-4"
-                    max_pages = int(m.group(3))
+            pages_match = re.search(r"pages?\s+(\d+)(?:-(\d+))?", rest)
+            if pages_match:
+                if pages_match.group(2):  # range like "1-4"
+                    max_pages = int(pages_match.group(2))
                 else:  # single page like "page 5"
-                    max_pages = int(m.group(2))
-            steps.append({"tool": "scrape_paginated", "args": {"url": url, "selector": "a", "max_pages": max_pages}})
+                    max_pages = int(pages_match.group(1))
+
+            steps.append(
+                {
+                    "tool": "scrape_paginated",
+                    "args": {"url": url, "selector": selector, "max_pages": max_pages},
+                }
+            )
 
         if re.search(r"\b(sysinfo|system info|system information)\b", lower):
             steps.append({"tool": "sysinfo", "args": {}})

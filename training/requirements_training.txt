@@ -1,0 +1,29 @@
+# Fine-tuning dependencies for Project Iceberg
+# Install separately from the main requirements.txt — these are heavy
+# and only needed when you want to fine-tune a model.
+#
+# Step 1: Install PyTorch with CUDA 11.8 (matches GTX 1080 Ti):
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+#
+# Step 2: Install these:
+#   pip install -r training/requirements_training.txt
+#
+# Verify CUDA is available:
+#   python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"
+
+# unsloth: fast LoRA fine-tuning with 4-bit quant support
+# Install with: pip install "unsloth[cu118] @ git+https://github.com/unslothai/unsloth.git"
+# OR the pip release:
+unsloth>=2024.11.0
+
+# HuggingFace ecosystem
+transformers>=4.45.0
+datasets>=3.0.0
+accelerate>=0.34.0
+peft>=0.13.0
+
+# 8-bit Adam optimizer (saves VRAM during training)
+bitsandbytes>=0.44.0
+
+# Supervised fine-tuning trainer
+trl>=0.12.0

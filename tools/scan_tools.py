@@ -9,7 +9,8 @@ Modes:
 
 import os
 
-from agent_core.constants import SCAN_HIGH_MODE_FILE_CAP, SCAN_PREVIEW_BYTES, SCAN_PREVIEW_DISPLAY_CHARS
+from agent_core.constants import (SCAN_HIGH_MODE_FILE_CAP, SCAN_PREVIEW_BYTES,
+                                  SCAN_PREVIEW_DISPLAY_CHARS)
 
 
 def scan(path: str = ".", mode: str = "LOW") -> str:

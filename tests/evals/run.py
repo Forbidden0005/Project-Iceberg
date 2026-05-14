@@ -28,7 +28,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from agent_core.dispatcher import Dispatcher  # noqa: E402
 from planner.planner import Planner  # noqa: E402
-from tests.evals.cases import DISPATCHER_CASES, PLANNER_CASES, DispatcherCase, PlannerCase  # noqa: E402
+from tests.evals.cases import (DISPATCHER_CASES, PLANNER_CASES,  # noqa: E402
+                               DispatcherCase, PlannerCase)
 
 BASELINE_PATH = Path(__file__).parent / "baseline.json"
 
@@ -142,7 +143,9 @@ def save_baseline(results: list[CaseResult]) -> None:
     BASELINE_PATH.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
 
 
-def compare_to_baseline(results: list[CaseResult], baseline: dict[str, bool]) -> dict[str, list[str]]:
+def compare_to_baseline(
+    results: list[CaseResult], baseline: dict[str, bool]
+) -> dict[str, list[str]]:
     diff = {"new_failures": [], "new_passes": [], "new_cases": []}
     for r in results:
         if r.case_id not in baseline:
@@ -215,7 +218,9 @@ def print_report(results: list[CaseResult], diff: dict[str, list[str]]) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run NL evals.")
-    parser.add_argument("--update", action="store_true", help="Update baseline with current results")
+    parser.add_argument(
+        "--update", action="store_true", help="Update baseline with current results"
+    )
     parser.add_argument("--quiet", action="store_true", help="Only print summary line")
     args = parser.parse_args()
 

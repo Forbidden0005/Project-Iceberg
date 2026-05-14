@@ -12,13 +12,9 @@ Flow per user turn:
 
 from typing import Any, Optional
 
-from agent_core.constants import (
-    CONVERSATION_HISTORY_LIMIT,
-    LLM_CHAT_MAX_TOKENS,
-    LLM_CHAT_TEMPERATURE,
-    LLM_NARRATE_MAX_TOKENS,
-    LLM_PLAN_TEMPERATURE,
-)
+from agent_core.constants import (CONVERSATION_HISTORY_LIMIT,
+                                  LLM_CHAT_MAX_TOKENS, LLM_CHAT_TEMPERATURE,
+                                  LLM_NARRATE_MAX_TOKENS, LLM_PLAN_TEMPERATURE)
 from agent_core.dispatcher import Dispatcher
 from agent_core.llm import get_provider
 from agent_core.logger import Logger
@@ -34,7 +30,14 @@ from tools.registry import describe_for_llm
 CHAT_SYSTEM_PROMPT = """You are a helpful local AI assistant running on the user's own machine.
 You are friendly, concise, and direct. When the user just wants to chat or asks a
 question, answer it naturally without any JSON or tool syntax. Keep replies short
-unless the user asks for detail. You have memory of this conversation."""
+unless the user asks for detail.
+
+You have full memory of this conversation, including any tools you have already run.
+Prior assistant messages may include tool execution results labelled as [Tool: name].
+When the user asks a follow-up question about something that already happened (e.g.
+"what did that scan find?" or "what files did you list?"), use those prior results as
+your context and answer directly — do not say you lack information or need to run the
+tool again."""
 
 NARRATE_SYSTEM_PROMPT = """You are summarising the output of tool calls the assistant just
 ran for the user. Be concise and speak in plain language. If something failed, say so
@@ -62,7 +65,8 @@ class OrchestratorAgent:
     def _load_mcp_servers(self) -> None:
         """Connect to configured MCP servers and register their tools."""
         # Lazy import: keeps startup fast when mcp_servers is not configured.
-        from tools.mcp_loader import load_mcp_servers, read_mcp_config  # noqa: PLC0415
+        from tools.mcp_loader import (load_mcp_servers,  # noqa: PLC0415
+                                      read_mcp_config)
 
         mcp_cfg = read_mcp_config()
         if not mcp_cfg:
@@ -161,13 +165,26 @@ class OrchestratorAgent:
         else:  # mixed
             output = self._run_tools(user_input, narrate=True)
 
+        # For the UI: plain text output (ToolResult.__str__ = result.output)
+        display = [str(r) for r in output]
+
+        # For history: label each tool result so the LLM knows what ran.
+        # Chat and narration results (plain str) pass through unchanged.
+        def _history_line(r: Any) -> str:
+            if hasattr(r, "tool") and r.tool:
+                status = "" if r.ok else " [FAILED]"
+                return f"[Tool: {r.tool}{status}]\n{r.output}"
+            return str(r)
+
+        history_content = "\n\n".join(_history_line(r) for r in output if str(r).strip())
+
         # Update histories
         self._push("user", user_input)
-        self._push("assistant", "\n".join(str(x) for x in output))
-        self.short_memory.add({"input": user_input, "output": output, "mode": mode})
+        self._push("assistant", history_content or "(no output)")
+        self.short_memory.add({"input": user_input, "output": display, "mode": mode})
         self.long_memory.add(user_input)
 
-        return output
+        return display
 
     # ------------------------------------------------------------------
     # Modes
@@ -192,7 +209,7 @@ class OrchestratorAgent:
             self.logger.error(f"[chat error] {e}")
             return f"[chat error] {e}"
 
-    def _run_tools(self, user_input: str, narrate: bool) -> list[str]:
+    def _run_tools(self, user_input: str, narrate: bool) -> list:
         plan = self.planner.create_plan(user_input, history=self._history)
         if not plan:
             # Even in tools mode, if we can't plan and we have an LLM, fall back to chat
@@ -208,7 +225,7 @@ class OrchestratorAgent:
             if narration:
                 results = results + ["", narration]
 
-        return [str(r) for r in results]
+        return results  # ToolResult objects + optional narration str
 
     def _narrate(self, user_input: str, results: list[Any]) -> Optional[str]:
         try:

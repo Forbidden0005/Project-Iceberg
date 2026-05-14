@@ -40,7 +40,8 @@ import threading
 from contextlib import AsyncExitStack
 from typing import Any
 
-from agent_core.constants import MCP_CALL_TIMEOUT_SECONDS, MCP_CONNECT_TIMEOUT_SECONDS
+from agent_core.constants import (MCP_CALL_TIMEOUT_SECONDS,
+                                  MCP_CONNECT_TIMEOUT_SECONDS)
 from tools.registry import register
 
 logger = logging.getLogger(__name__)
@@ -240,7 +241,8 @@ def load_mcp_servers(mcp_config: dict) -> "MCPServerManager | None":
 
     if not _MCP_AVAILABLE:
         logger.warning(
-            "[mcp] servers are configured but the 'mcp' package is not installed. " "Run: pip install mcp"
+            "[mcp] servers are configured but the 'mcp' package is not installed. "
+            "Run: pip install mcp"
         )
         return None
 

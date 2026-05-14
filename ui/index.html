@@ -32,13 +32,6 @@
 
 html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm);font-size:13px;line-height:1.5;overflow:hidden}
 
-.shell{
-  display:grid;
-  grid-template-rows:48px 1fr 60px;
-  grid-template-columns:268px 1fr 244px;
-  height:100vh;
-}
-
 /* ── SCANLINES ──────────────────────────────────────────── */
 .scanlines{
   position:fixed;inset:0;pointer-events:none;z-index:9999;
@@ -47,11 +40,11 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
 
 /* ── TOPBAR ─────────────────────────────────────────────── */
 .topbar{
-  grid-column:1/-1;grid-row:1;
-  display:flex;align-items:center;gap:14px;
+  height:48px;display:flex;align-items:center;gap:14px;
   padding:0 20px;
   background:var(--surf);
   border-bottom:1px solid var(--bdr);
+  flex-shrink:0;
 }
 
 .logo{
@@ -60,7 +53,6 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
   letter-spacing:0.14em;color:var(--t1);text-transform:uppercase;
   margin-right:6px;
 }
-
 .logo svg{flex-shrink:0}
 
 .pill{
@@ -68,17 +60,14 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
   padding:4px 11px;
   background:var(--card);border:1px solid var(--bdr);border-radius:4px;
   font-family:var(--fm);font-size:11px;color:var(--t2);
-  white-space:nowrap;
+  white-space:nowrap;cursor:pointer;transition:border-color .15s;
 }
+.pill:hover{border-color:var(--bdr2)}
 .pill .pval{color:var(--t1);font-weight:500}
-
-.pdot{
-  width:6px;height:6px;border-radius:50%;flex-shrink:0;
-}
+.pdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .pdot.g{background:var(--green);box-shadow:0 0 7px var(--green);animation:glow 2.4s ease-in-out infinite}
 .pdot.b{background:var(--accent);box-shadow:0 0 7px var(--accent)}
 .pdot.off{background:var(--t3)}
-
 @keyframes glow{0%,100%{opacity:1}50%{opacity:.35}}
 
 .spacer{flex:1}
@@ -95,616 +84,1301 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
 .tbtn.danger{border-color:rgba(255,68,85,0.4);color:rgba(255,68,85,0.6)}
 .tbtn.danger:hover{border-color:var(--red);color:var(--red)}
 
+/* ── WORKSPACE (6-panel IDE grid) ───────────────────────── */
+.workspace{
+  display:grid;
+  grid-template-columns:260px 1fr 280px;
+  grid-template-rows:1fr;
+  height:calc(100vh - 48px);
+  overflow:hidden;
+}
+
 /* ── LEFT PANEL ─────────────────────────────────────────── */
+/* min-height:0 is required on all grid children so that flex descendants
+   can shrink below their content size and show scrollbars correctly. */
+.lp,.cp,.rp{ min-height:0; }
+
 .lp{
-  grid-column:1;grid-row:2;
-  background:var(--surf);border-right:1px solid var(--bdr);
-  overflow-y:auto;padding:14px 10px;
-  display:flex;flex-direction:column;gap:8px;
-}
-.lp::-webkit-scrollbar{width:3px}
-.lp::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
-
-.plabel{
-  font-family:var(--fd);font-size:9px;font-weight:700;
-  letter-spacing:0.2em;text-transform:uppercase;color:var(--t3);
-  padding:2px 4px;margin-bottom:2px;
-}
-
-/* server cards */
-.sc{
-  background:var(--card);border:1px solid var(--bdr);border-radius:6px;
-  padding:12px 11px;cursor:pointer;transition:all .15s;
-  position:relative;overflow:hidden;
-}
-.sc::before{
-  content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
-  background:transparent;transition:background .2s;
-}
-.sc:hover{background:var(--card2);border-color:var(--bdr2)}
-.sc:hover::before{background:var(--accent)}
-.sc.expanded{border-color:var(--bdr3)}
-.sc.expanded::before{background:var(--accent)}
-
-.sc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
-
-.sc-name{
-  font-family:var(--fd);font-size:11px;font-weight:700;
-  letter-spacing:0.06em;text-transform:uppercase;color:var(--t1);
-}
-
-.sc-status{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--t2)}
-
-.sdot{
-  width:7px;height:7px;border-radius:50%;flex-shrink:0;
-}
-.sdot.on{background:var(--green);box-shadow:0 0 8px var(--green);animation:glow 2.4s ease-in-out infinite}
-.sdot.off{background:var(--t3)}
-
-.sc-desc{font-size:11px;color:var(--t2);margin-bottom:7px;line-height:1.4}
-
-.sc-count{
-  font-family:var(--fd);font-size:11px;letter-spacing:0.08em;
-  text-transform:uppercase;color:var(--t2);
-}
-.sc-count span{color:var(--accent2)}
-
-.sc-tools{
-  margin-top:9px;padding-top:9px;border-top:1px solid var(--bdr);
-  display:none;flex-direction:column;gap:2px;
-}
-.sc.expanded .sc-tools{display:flex}
-
-.sc-tool{font-size:11px;color:var(--t2);padding:1px 0}
-.sc-tool::before{content:'→ ';color:var(--t3)}
-.sc-more{font-size:10px;color:var(--t3);font-style:italic;padding-left:14px;margin-top:2px}
-
-.divider{height:1px;background:var(--bdr);margin:2px 0}
-
-.add-btn{
-  width:100%;padding:8px;background:transparent;
-  border:1px dashed var(--bdr2);border-radius:5px;
-  color:var(--t3);font-family:var(--fd);font-size:10px;font-weight:600;
-  letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;
-  transition:all .15s;text-align:center;
-}
-.add-btn:hover{border-color:var(--accent);color:var(--accent2)}
-
-/* ── CHAT ───────────────────────────────────────────────── */
-.cc{
-  grid-column:2;grid-row:2;
-  display:flex;flex-direction:column;overflow:hidden;
+  grid-column:1;grid-row:1;
+  display:flex;flex-direction:column;
   border-right:1px solid var(--bdr);
+  overflow:hidden;min-height:0;
 }
 
+/* Section 1: File Tree */
+.s1{
+  flex:1;display:flex;flex-direction:column;
+  border-bottom:1px solid var(--bdr);
+  overflow:hidden;min-height:0;
+}
+
+.panel-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 10px;
+  background:var(--surf);border-bottom:1px solid var(--bdr);
+  font-family:var(--fd);font-size:10px;font-weight:600;
+  letter-spacing:0.1em;text-transform:uppercase;color:var(--t2);
+  flex-shrink:0;
+}
+.panel-hdr-title{display:flex;align-items:center;gap:6px}
+.panel-hdr-actions{display:flex;gap:4px}
+.phbtn{
+  background:transparent;border:none;padding:2px 5px;
+  color:var(--t3);cursor:pointer;font-size:12px;border-radius:3px;
+  transition:color .15s;
+}
+.phbtn:hover{color:var(--accent2)}
+
+.tree-scroll{flex:1;overflow-y:auto;padding:4px 0}
+.tree-scroll::-webkit-scrollbar{width:4px}
+.tree-scroll::-webkit-scrollbar-track{background:transparent}
+.tree-scroll::-webkit-scrollbar-thumb{background:var(--t3);border-radius:2px}
+
+.tree-empty{font-size:11px;color:var(--t3);padding:12px;line-height:1.8;text-align:center}
+
+.tree-node{
+  display:flex;align-items:center;gap:4px;
+  padding:3px 8px;cursor:pointer;
+  font-size:11px;color:var(--t2);
+  border-radius:3px;margin:0 4px;
+  user-select:none;transition:background .1s,color .1s;
+  white-space:nowrap;overflow:hidden;
+}
+.tree-node:hover{background:var(--card2);color:var(--t1)}
+.tree-node.active{background:rgba(61,143,255,0.15);color:var(--accent2)}
+.tree-node .tree-toggle{width:14px;flex-shrink:0;color:var(--t3);font-size:9px}
+.tree-node .tree-icon{flex-shrink:0;font-size:11px}
+.tree-node .tree-name{flex:1;overflow:hidden;text-overflow:ellipsis}
+.tree-children{padding-left:14px}
+.tree-children.collapsed{display:none}
+
+/* Section 2: Terminal */
+.s2{
+  height:240px;flex-shrink:0;display:flex;flex-direction:column;
+  overflow:hidden;
+}
+
+.term-tabbar{
+  display:flex;align-items:center;
+  background:var(--surf);border-bottom:1px solid var(--bdr);
+  padding:0 4px;gap:0;flex-shrink:0;min-height:32px;
+}
+.term-tab{
+  padding:5px 12px;font-size:10px;font-family:var(--fd);
+  color:var(--t3);cursor:pointer;border-right:1px solid var(--bdr);
+  white-space:nowrap;transition:color .15s,background .15s;
+  letter-spacing:0.06em;display:flex;align-items:center;gap:5px;
+}
+.term-tab:hover{color:var(--t2);background:var(--card)}
+.term-tab.active{color:var(--accent2);background:var(--card)}
+.term-tab-x{
+  background:transparent;border:none;padding:0 1px;
+  color:var(--t3);cursor:pointer;font-size:11px;line-height:1;
+  border-radius:2px;transition:color .1s;
+}
+.term-tab-x:hover{color:var(--red)}
+.term-tabbar-actions{margin-left:auto;display:flex;gap:2px;padding-right:4px}
+.term-act-btn{
+  background:transparent;border:none;padding:4px 7px;
+  color:var(--t3);cursor:pointer;font-size:13px;border-radius:3px;
+  transition:color .15s;position:relative;
+}
+.term-act-btn:hover{color:var(--accent2)}
+
+/* Terminal submenu */
+.term-menu{
+  position:absolute;bottom:calc(100% + 4px);right:0;
+  background:var(--card);border:1px solid var(--bdr2);border-radius:6px;
+  padding:4px 0;z-index:200;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,0.5);
+  display:none;
+}
+.term-menu.open{display:block}
+.term-menu-item{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 14px;cursor:pointer;font-size:11px;color:var(--t2);
+  transition:background .1s,color .1s;
+}
+.term-menu-item:hover{background:var(--card2);color:var(--t1)}
+.term-menu-item.danger:hover{color:var(--red)}
+
+.term-body{flex:1;overflow:hidden;position:relative}
+.term-instance{
+  position:absolute;inset:0;display:none;flex-direction:column;
+}
+.term-instance.active{display:flex}
+.term-output{
+  flex:1;overflow-y:auto;padding:8px 10px;
+  font-family:var(--fm);font-size:11px;line-height:1.6;
+  background:var(--bg);color:var(--t1);
+}
+.term-output::-webkit-scrollbar{width:4px}
+.term-output::-webkit-scrollbar-thumb{background:var(--t3);border-radius:2px}
+.term-line{white-space:pre-wrap;word-break:break-all}
+.term-line.err{color:var(--red)}
+.term-line.sys{color:var(--t3);font-style:italic}
+.term-input-row{
+  display:flex;align-items:center;gap:0;
+  border-top:1px solid var(--bdr);background:var(--surf);
+  padding:4px 8px;flex-shrink:0;
+}
+.term-prompt{color:var(--green);font-size:11px;margin-right:6px;flex-shrink:0}
+.term-input{
+  flex:1;background:transparent;border:none;outline:none;
+  color:var(--t1);font-family:var(--fm);font-size:11px;
+}
+.term-input::placeholder{color:var(--t3)}
+
+/* ── CENTER PANEL ───────────────────────────────────────── */
+.cp{
+  grid-column:2;grid-row:1;
+  display:flex;flex-direction:column;
+  border-right:1px solid var(--bdr);
+  overflow:hidden;min-height:0;
+}
+
+/* Section 3: File Editor */
+.s3{
+  flex:1;display:flex;flex-direction:column;
+  border-bottom:1px solid var(--bdr);
+  overflow:hidden;min-height:0;
+}
+
+.editor-tabbar{
+  display:flex;align-items:center;
+  background:var(--surf);border-bottom:1px solid var(--bdr);
+  padding:0;overflow-x:auto;flex-shrink:0;min-height:34px;
+}
+.editor-tabbar::-webkit-scrollbar{height:3px}
+.editor-tabbar::-webkit-scrollbar-thumb{background:var(--t3)}
+.editor-tab{
+  padding:6px 14px;font-size:11px;font-family:var(--fm);
+  color:var(--t3);cursor:pointer;border-right:1px solid var(--bdr);
+  white-space:nowrap;transition:color .15s,background .15s;
+  display:flex;align-items:center;gap:6px;flex-shrink:0;
+}
+.editor-tab:hover{color:var(--t2);background:var(--card)}
+.editor-tab.active{color:var(--t1);background:var(--card);border-bottom:2px solid var(--accent)}
+.editor-tab-x{
+  background:transparent;border:none;padding:0;
+  color:var(--t3);cursor:pointer;font-size:12px;line-height:1;
+  border-radius:2px;transition:color .1s;
+}
+.editor-tab-x:hover{color:var(--red)}
+.editor-tab-icon{font-size:10px;color:var(--t3)}
+.editor-empty{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:var(--t3);font-size:12px;gap:8px;pointer-events:none;
+}
+.editor-empty-icon{font-size:32px;opacity:.3}
+
+.editor-content{flex:1;overflow:hidden;position:relative;min-height:0}
+.editor-view{
+  position:absolute;inset:0;display:none;overflow:auto;
+}
+.editor-view.active{display:block}
+.editor-view::-webkit-scrollbar{width:6px;height:6px}
+.editor-view::-webkit-scrollbar-thumb{background:var(--t3);border-radius:3px}
+
+.editor-view .fv-table{
+  border-collapse:collapse;font-size:11px;
+  font-family:var(--fm);
+}
+.editor-view .fv-table th{
+  background:var(--surf);color:var(--t2);
+  padding:5px 10px;border:1px solid var(--bdr);
+  font-weight:500;white-space:nowrap;position:sticky;top:0;z-index:1;
+}
+.editor-view .fv-table td{
+  padding:4px 10px;border:1px solid var(--bdr);
+  color:var(--t1);max-width:260px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;
+}
+.editor-view .fv-table tr:hover td{background:var(--card2)}
+.editor-view .fv-row-num{color:var(--t3);font-size:10px;min-width:36px}
+
+.editor-view pre{
+  padding:16px;font-size:12px;font-family:var(--fm);
+  color:var(--t1);line-height:1.6;white-space:pre-wrap;word-break:break-all;
+}
+
+.editor-statusbar{
+  display:flex;align-items:center;gap:14px;
+  padding:3px 10px;background:var(--surf);border-top:1px solid var(--bdr);
+  font-size:10px;color:var(--t3);flex-shrink:0;
+}
+.editor-status-info{flex:1}
+
+/* ── Section 4: Chat ─────────────────────────────────────── */
+.s4{
+  height:340px;flex-shrink:0;display:flex;flex-direction:column;
+  overflow:hidden;
+}
+
+/* Chat messages area */
 .msgs{
-  flex:1;overflow-y:auto;
-  padding:22px 22px 10px;
-  display:flex;flex-direction:column;gap:18px;
+  flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;
 }
 .msgs::-webkit-scrollbar{width:4px}
-.msgs::-webkit-scrollbar-track{background:transparent}
-.msgs::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
+.msgs::-webkit-scrollbar-thumb{background:var(--t3);border-radius:2px}
 
-.msg{display:flex;flex-direction:column;max-width:82%;animation:msgIn .22s ease-out}
-@keyframes msgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-
-.msg.u{align-self:flex-end;align-items:flex-end}
-.msg.a{align-self:flex-start;align-items:flex-start}
-
-.mmeta{
-  font-size:9px;color:var(--t3);margin-bottom:4px;
-  letter-spacing:0.08em;text-transform:uppercase;font-family:var(--fd);
-}
-
+.msg{display:flex;flex-direction:column;gap:3px}
+.msg.u{align-items:flex-end}
+.msg.a{align-items:flex-start}
+.mmeta{font-size:10px;color:var(--t3);font-family:var(--fd);letter-spacing:0.06em}
 .mbubble{
-  padding:10px 14px;border-radius:8px;
-  font-size:13px;line-height:1.65;
+  max-width:90%;padding:8px 12px;border-radius:6px;
+  font-size:12px;line-height:1.6;word-break:break-word;
 }
-.msg.u .mbubble{
-  background:rgba(61,143,255,0.14);
-  border:1px solid rgba(61,143,255,0.3);
-  color:var(--t1);
-}
-.msg.a .mbubble{
-  background:var(--card);border:1px solid var(--bdr);color:var(--t1);
-}
+.msg.u .mbubble{background:rgba(61,143,255,0.15);border:1px solid var(--bdr2);color:var(--t1)}
+.msg.a .mbubble{background:var(--card);border:1px solid var(--bdr);color:var(--t1)}
 
-/* tool execution block */
-.toolex{
-  margin-top:8px;
-  background:rgba(5,8,20,0.8);
-  border:1px solid var(--bdr);border-left:2px solid var(--accent);
-  border-radius:6px;padding:8px 12px;
-  font-size:11px;
-}
-.toolex-head{
-  display:flex;align-items:center;gap:6px;
-  font-family:var(--fd);font-size:9px;font-weight:700;
-  letter-spacing:0.12em;text-transform:uppercase;color:var(--accent2);
-  margin-bottom:5px;
-}
-.toolex-name{color:var(--t2);font-family:var(--fm);margin-bottom:4px}
-.toolex-result{
-  color:var(--t2);font-size:11px;
-  white-space:pre-wrap;max-height:72px;overflow-y:auto;
-  border-top:1px solid var(--bdr);padding-top:4px;margin-top:4px;
-}
-.toolex-result::-webkit-scrollbar{width:2px}
-.toolex-result::-webkit-scrollbar-thumb{background:var(--bdr2)}
-
-/* typing indicator */
-.typing-wrap{
-  background:var(--card);border:1px solid var(--bdr);border-radius:8px;
-  padding:11px 16px;
-  display:flex;align-items:center;gap:5px;
-}
+.typing-wrap{display:flex;gap:4px;padding:4px 0}
 .tdot{
-  width:5px;height:5px;border-radius:50%;background:var(--t2);
-  animation:bounce 1.2s ease-in-out infinite;
+  width:6px;height:6px;border-radius:50%;background:var(--t3);
+  animation:tdot 1.2s ease-in-out infinite;
 }
 .tdot:nth-child(2){animation-delay:.2s}
 .tdot:nth-child(3){animation-delay:.4s}
-@keyframes bounce{0%,100%{transform:translateY(0);opacity:.35}50%{transform:translateY(-5px);opacity:1}}
+@keyframes tdot{0%,80%,100%{transform:scale(0.6);opacity:.4}40%{transform:scale(1);opacity:1}}
 
-/* ── INPUT BAR ──────────────────────────────────────────── */
-.ib{
-  grid-column:2;grid-row:3;
+/* Tool form */
+.tool-form{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.tf-group{display:flex;flex-direction:column;gap:4px}
+.tf-label{font-size:10px;color:var(--t2);display:flex;align-items:center;gap:6px}
+.tf-req{color:var(--amber);font-size:9px;border:1px solid rgba(255,170,0,0.4);border-radius:3px;padding:1px 4px}
+.tf-opt{color:var(--t3);font-size:9px;border:1px solid var(--bdr);border-radius:3px;padding:1px 4px}
+.tf-input{
+  background:var(--bg);border:1px solid var(--bdr2);border-radius:4px;
+  padding:5px 8px;color:var(--t1);font-family:var(--fm);font-size:11px;
+  width:100%;
+}
+.tf-input:focus{outline:none;border-color:var(--accent)}
+.tf-input.tf-err{border-color:var(--red)}
+.tf-select{
+  background:var(--card);border:1px solid var(--bdr2);border-radius:4px;
+  padding:5px 8px;color:var(--t1);font-family:var(--fm);font-size:11px;
+  width:100%;cursor:pointer;
+}
+.tf-submit{
+  align-self:flex-start;padding:6px 16px;
+  background:var(--accent);border:none;border-radius:4px;
+  color:#fff;font-family:var(--fd);font-size:10px;font-weight:600;
+  letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;
+  transition:background .15s;
+}
+.tf-submit:hover{background:var(--accent2)}
+.tf-result{
+  margin-top:8px;padding:8px 10px;background:var(--bg);
+  border-radius:4px;border:1px solid var(--bdr);
+  font-size:11px;white-space:pre-wrap;word-break:break-all;
+  max-height:200px;overflow-y:auto;
+}
+.tf-result.err{color:var(--red);border-color:rgba(255,68,85,0.3)}
+
+/* Skill strip */
+.sk-strip{
+  display:none;align-items:center;gap:6px;
+  padding:5px 12px;background:var(--card);border-top:1px solid var(--bdr);
+  flex-wrap:wrap;flex-shrink:0;
+}
+.sk-strip-label{font-size:10px;color:var(--t3);font-family:var(--fd)}
+.sk-pill{
+  display:flex;align-items:center;gap:4px;
+  padding:2px 8px;background:rgba(61,143,255,0.1);
+  border:1px solid var(--bdr2);border-radius:12px;
+  font-size:10px;color:var(--accent2);
+}
+.sk-pill-x{
+  background:transparent;border:none;color:var(--t3);cursor:pointer;
+  font-size:12px;line-height:1;padding:0 1px;
+}
+.sk-pill-x:hover{color:var(--red)}
+
+/* Chat input toolbar */
+.chat-toolbar{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 10px;background:var(--surf);border-top:1px solid var(--bdr);
+  flex-shrink:0;
+}
+
+.chat-input-wrap{
+  position:relative;display:flex;align-items:center;
+  flex:1;background:var(--card);border:1px solid var(--bdr2);border-radius:6px;
+  transition:border-color .15s;
+}
+.chat-input-wrap:focus-within{border-color:var(--accent)}
+#cinput{
+  flex:1;background:transparent;border:none;outline:none;
+  padding:8px 12px;color:var(--t1);font-family:var(--fm);font-size:12px;
+  resize:none;max-height:80px;min-height:36px;
+}
+#cinput::placeholder{color:var(--t3)}
+
+#send-btn{
+  margin:4px;padding:4px 12px;background:var(--accent);
+  border:none;border-radius:4px;color:#fff;
+  font-family:var(--fd);font-size:10px;font-weight:600;
+  letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;
+  transition:background .15s;flex-shrink:0;
+}
+#send-btn:hover{background:var(--accent2)}
+#send-btn.disabled{background:var(--t3);cursor:not-allowed}
+
+/* Chat bottom bar: model + prompts */
+.chat-bottom-bar{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 10px;background:var(--surf);border-top:1px solid var(--bdr);
+  flex-shrink:0;
+}
+.chat-bottom-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:3px 10px;background:var(--card);
+  border:1px solid var(--bdr);border-radius:4px;
+  font-size:10px;color:var(--t2);cursor:pointer;
+  font-family:var(--fd);letter-spacing:0.06em;
+  transition:border-color .15s,color .15s;white-space:nowrap;
+  position:relative;
+}
+.chat-bottom-btn:hover{border-color:var(--bdr2);color:var(--t1)}
+.chat-bottom-btn .cbb-dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.chat-bottom-btn .cbb-arrow{font-size:8px;color:var(--t3)}
+
+/* Model dropdown */
+.model-dropdown{
+  position:absolute;bottom:calc(100% + 6px);left:0;
+  background:var(--card);border:1px solid var(--bdr2);border-radius:6px;
+  padding:6px 0;z-index:300;min-width:200px;max-height:240px;overflow-y:auto;
+  box-shadow:0 8px 24px rgba(0,0,0,0.5);display:none;
+}
+.model-dropdown.open{display:block}
+.model-dropdown::-webkit-scrollbar{width:4px}
+.model-dropdown::-webkit-scrollbar-thumb{background:var(--t3);border-radius:2px}
+.mdrop-item{
+  padding:7px 14px;cursor:pointer;font-size:11px;color:var(--t2);
+  display:flex;align-items:center;gap:8px;transition:background .1s,color .1s;
+}
+.mdrop-item:hover{background:var(--card2);color:var(--t1)}
+.mdrop-item.active{color:var(--green)}
+.mdrop-check{font-size:10px;width:14px;flex-shrink:0}
+.mdrop-name{flex:1}
+.mdrop-prov{font-size:9px;color:var(--t3)}
+.mdrop-hdr{
+  padding:4px 14px;font-size:9px;color:var(--t3);
+  font-family:var(--fd);letter-spacing:0.08em;text-transform:uppercase;
+  border-bottom:1px solid var(--bdr);margin-bottom:2px;
+}
+
+/* Prompt manager dropdown */
+.prompt-dropdown{
+  position:absolute;bottom:calc(100% + 6px);left:0;
+  background:var(--card);border:1px solid var(--bdr2);border-radius:6px;
+  padding:0;z-index:300;width:280px;max-height:320px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.5);display:none;overflow:hidden;
+}
+.prompt-dropdown.open{display:flex;flex-direction:column}
+.prompt-drop-hdr{
+  padding:8px 12px;border-bottom:1px solid var(--bdr);
+  font-size:10px;color:var(--t3);font-family:var(--fd);
+  letter-spacing:0.08em;text-transform:uppercase;
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.prompt-drop-add{
+  background:transparent;border:1px solid var(--bdr2);border-radius:3px;
+  padding:2px 7px;color:var(--accent);font-size:9px;cursor:pointer;
+  font-family:var(--fd);letter-spacing:0.06em;transition:border-color .15s;
+}
+.prompt-drop-add:hover{border-color:var(--accent);background:rgba(61,143,255,0.1)}
+.prompt-list{flex:1;overflow-y:auto}
+.prompt-list::-webkit-scrollbar{width:4px}
+.prompt-list::-webkit-scrollbar-thumb{background:var(--t3);border-radius:2px}
+.prompt-item{
   display:flex;align-items:center;gap:8px;
-  padding:10px 16px;
-  background:var(--surf);border-top:1px solid var(--bdr);
-  border-right:1px solid var(--bdr);
+  padding:7px 12px;border-bottom:1px solid var(--bdr);
+  font-size:11px;color:var(--t2);
 }
+.prompt-item:last-child{border-bottom:none}
+.prompt-toggle{
+  width:30px;height:16px;background:var(--t3);border-radius:8px;
+  position:relative;cursor:pointer;flex-shrink:0;transition:background .2s;border:none;
+}
+.prompt-toggle.on{background:var(--green)}
+.prompt-toggle::after{
+  content:'';position:absolute;top:2px;left:2px;
+  width:12px;height:12px;background:#fff;border-radius:50%;
+  transition:left .2s;
+}
+.prompt-toggle.on::after{left:16px}
+.prompt-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.prompt-name:hover{color:var(--t1)}
+.prompt-actions{display:flex;gap:2px}
+.prompt-action-btn{
+  background:transparent;border:none;padding:2px 4px;
+  color:var(--t3);cursor:pointer;font-size:11px;border-radius:2px;
+  transition:color .1s;
+}
+.prompt-action-btn:hover{color:var(--t1)}
+.prompt-action-btn.del:hover{color:var(--red)}
+.prompt-empty{padding:12px;font-size:11px;color:var(--t3);text-align:center}
 
-.cinput{
-  flex:1;background:var(--card);border:1px solid var(--bdr);border-radius:6px;
-  padding:9px 14px;color:var(--t1);font-family:var(--fm);font-size:13px;
-  outline:none;resize:none;height:38px;transition:border-color .15s;
+/* Add/Edit prompt inline form */
+.prompt-form{
+  padding:10px 12px;border-top:1px solid var(--bdr);background:var(--surf);
+  flex-shrink:0;display:none;flex-direction:column;gap:6px;
 }
-.cinput:focus{border-color:var(--bdr3)}
-.cinput::placeholder{color:var(--t3)}
-
-.ibtn{
-  width:36px;height:36px;border-radius:6px;
-  background:var(--card);border:1px solid var(--bdr);
-  color:var(--t2);display:flex;align-items:center;justify-content:center;
-  cursor:pointer;transition:all .15s;flex-shrink:0;
+.prompt-form.open{display:flex}
+.prompt-form-input{
+  background:var(--bg);border:1px solid var(--bdr2);border-radius:4px;
+  padding:5px 8px;color:var(--t1);font-family:var(--fm);font-size:11px;
+  width:100%;
 }
-.ibtn:hover{border-color:var(--accent);color:var(--accent2)}
-.ibtn.send{background:var(--accent);border-color:var(--accent);color:#fff}
-.ibtn.send:hover{background:var(--accent2);border-color:var(--accent2)}
-.ibtn:disabled{opacity:.4;cursor:not-allowed}
+.prompt-form-input:focus{outline:none;border-color:var(--accent)}
+.prompt-form-textarea{
+  background:var(--bg);border:1px solid var(--bdr2);border-radius:4px;
+  padding:5px 8px;color:var(--t1);font-family:var(--fm);font-size:11px;
+  width:100%;resize:vertical;min-height:60px;
+}
+.prompt-form-textarea:focus{outline:none;border-color:var(--accent)}
+.prompt-form-actions{display:flex;gap:6px}
+.prompt-save-btn{
+  padding:4px 12px;background:var(--accent);border:none;border-radius:4px;
+  color:#fff;font-family:var(--fd);font-size:9px;font-weight:600;
+  letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;
+}
+.prompt-cancel-btn{
+  padding:4px 12px;background:transparent;border:1px solid var(--bdr);border-radius:4px;
+  color:var(--t3);font-family:var(--fd);font-size:9px;cursor:pointer;
+}
 
 /* ── RIGHT PANEL ────────────────────────────────────────── */
 .rp{
-  grid-column:3;grid-row:2;
-  background:var(--surf);overflow-y:auto;
-  padding:14px 10px;display:flex;flex-direction:column;gap:3px;
-}
-.rp::-webkit-scrollbar{width:3px}
-.rp::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
-
-.sinput{
-  width:100%;background:var(--card);border:1px solid var(--bdr);
-  border-radius:4px;padding:6px 10px;color:var(--t1);
-  font-family:var(--fm);font-size:11px;outline:none;
-  transition:border-color .15s;margin-bottom:10px;
-}
-.sinput:focus{border-color:var(--bdr3)}
-.sinput::placeholder{color:var(--t3)}
-
-.tglabel{
-  font-family:var(--fd);font-size:9px;font-weight:700;
-  letter-spacing:0.2em;text-transform:uppercase;color:var(--t3);
-  padding:6px 4px 2px;margin-top:4px;
+  grid-column:3;grid-row:1;
+  display:flex;flex-direction:column;
+  overflow:hidden;min-height:0;
 }
 
-.trow{
-  display:flex;align-items:center;gap:8px;
-  padding:4px 6px;border-radius:4px;cursor:pointer;transition:background .1s;
+/* Section 5: Tool Registry / Skills / MCP tabs */
+.s5{
+  flex:1;display:flex;flex-direction:column;
+  border-bottom:1px solid var(--bdr);
+  overflow:hidden;min-height:0;
 }
-.trow:hover{background:var(--card)}
-.tname{
-  font-family:var(--fm);font-size:11px;color:var(--accent2);
-  flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-}
-.tcat{
-  font-size:9px;padding:2px 5px;border-radius:3px;
-  font-family:var(--fd);letter-spacing:0.05em;text-transform:uppercase;
+
+.tab-bar{
+  display:flex;
+  background:var(--surf);border-bottom:1px solid var(--bdr);
   flex-shrink:0;
 }
-.tcat.bi{background:rgba(48,80,148,0.25);color:var(--t2)}
-.tcat.mc{background:rgba(0,200,240,0.1);color:var(--cyan)}
+.tab-btn{
+  flex:1;padding:8px 6px;
+  background:transparent;border:none;border-bottom:2px solid transparent;
+  color:var(--t3);font-family:var(--fd);font-size:9px;font-weight:600;
+  letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;
+  transition:color .15s,border-color .15s;text-align:center;
+}
+.tab-btn:hover{color:var(--t2)}
+.tab-btn.active{color:var(--accent2);border-bottom-color:var(--accent)}
 
-/* ── BOTTOM FLANKS ──────────────────────────────────────── */
-.lb{
-  grid-column:1;grid-row:3;
-  background:var(--surf);border-top:1px solid var(--bdr);border-right:1px solid var(--bdr);
-  display:flex;align-items:center;justify-content:center;
+.tab-pane{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0}
+.tab-pane.active{display:flex;min-height:0}
+
+/* Tool Registry pane */
+.tool-search-wrap{padding:8px;flex-shrink:0;min-height:0}
+.tool-search{
+  width:100%;background:var(--card);border:1px solid var(--bdr);border-radius:4px;
+  padding:5px 10px;color:var(--t1);font-family:var(--fm);font-size:11px;
 }
-.lb span{
-  font-family:var(--fd);font-size:10px;color:var(--t3);
-  letter-spacing:0.12em;text-transform:uppercase;
+.tool-search:focus{outline:none;border-color:var(--accent)}
+.tool-search::placeholder{color:var(--t3)}
+
+#tlist{flex:1;overflow-y:auto;padding:0 4px 8px}
+#tlist::-webkit-scrollbar{width:4px}
+#tlist::-webkit-scrollbar-thumb{background:var(--t3);border-radius:2px}
+
+.tc-group{border-radius:4px;margin:2px 0;overflow:hidden}
+.tc-group.tc-hidden{display:none}
+.tc-header{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 8px;cursor:pointer;
+  background:var(--card);
+  font-size:10px;color:var(--t2);
+  font-family:var(--fd);letter-spacing:0.06em;
+  user-select:none;transition:background .1s;
+}
+.tc-header:hover{background:var(--card2)}
+.tc-arrow{font-size:9px;color:var(--t3);transition:transform .2s;flex-shrink:0}
+.tc-group.open .tc-arrow{transform:rotate(90deg)}
+.tc-icon{font-size:11px;flex-shrink:0}
+.tc-label{flex:1}
+.tc-count{font-size:9px;color:var(--t3);background:var(--bg);padding:1px 5px;border-radius:8px}
+.tc-body{display:none;padding:2px 0}
+.tc-group.open .tc-body{display:block}
+.tc-tool{
+  display:flex;align-items:center;gap:6px;
+  padding:4px 8px;cursor:pointer;font-size:10px;color:var(--t2);
+  border-radius:3px;margin:1px 4px;
+  transition:background .1s,color .1s;
+}
+.tc-tool:hover{background:var(--card2);color:var(--t1)}
+.tc-tool.tc-hidden{display:none}
+.tc-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.tc-tname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Skills pane */
+.sk-search-wrap{padding:8px;flex-shrink:0;display:flex;gap:6px;min-height:0}
+.sk-search{
+  flex:1;background:var(--card);border:1px solid var(--bdr);border-radius:4px;
+  padding:5px 10px;color:var(--t1);font-family:var(--fm);font-size:11px;
+}
+.sk-search:focus{outline:none;border-color:var(--accent)}
+.sk-search::placeholder{color:var(--t3)}
+.sk-install-btn{
+  padding:5px 10px;background:transparent;border:1px solid var(--bdr2);border-radius:4px;
+  color:var(--accent);font-size:10px;cursor:pointer;white-space:nowrap;
+  font-family:var(--fd);transition:border-color .15s;
+}
+.sk-install-btn:hover{border-color:var(--accent)}
+
+.sk-active-hdr{
+  display:none;align-items:center;justify-content:space-between;
+  padding:5px 10px;background:rgba(61,143,255,0.08);border-bottom:1px solid var(--bdr);
+  flex-shrink:0;min-height:0;
+}
+.sk-active-label{font-size:10px;color:var(--accent2);font-family:var(--fd)}
+#sk-active-count{font-size:10px;color:var(--t3)}
+
+#sk-list{flex:1;overflow-y:auto;padding:4px 0}
+#sk-list::-webkit-scrollbar{width:4px}
+#sk-list::-webkit-scrollbar-thumb{background:var(--t3);border-radius:2px}
+.sk-item{
+  display:flex;align-items:flex-start;gap:8px;
+  padding:8px 10px;border-bottom:1px solid var(--bdr);
+  transition:background .1s;
+}
+.sk-item:hover{background:var(--card)}
+.sk-item.active{background:rgba(61,143,255,0.06)}
+.sk-info{flex:1;min-width:0}
+.sk-name{font-size:11px;color:var(--t1);font-weight:500;margin-bottom:2px}
+.sk-desc{font-size:10px;color:var(--t2);line-height:1.5}
+.sk-add{
+  padding:3px 8px;background:transparent;border:1px solid var(--bdr2);border-radius:3px;
+  color:var(--accent);font-size:12px;cursor:pointer;flex-shrink:0;
+  transition:all .15s;margin-top:1px;
+}
+.sk-add:hover{background:rgba(61,143,255,0.12)}
+.sk-add.added{border-color:var(--green);color:var(--green)}
+
+.slash-tag{
+  display:inline-block;padding:1px 5px;border-radius:3px;font-size:9px;
+  background:rgba(61,143,255,0.12);color:var(--accent2);margin-right:3px;
+}
+.slash-tag.llm{background:rgba(0,200,240,0.12);color:var(--cyan)}
+.slash-tag.file{background:rgba(106,176,255,0.12);color:var(--accent2)}
+.slash-tag.system{background:rgba(255,170,0,0.12);color:var(--amber)}
+
+/* MCP pane */
+.mcp-pane-wrap{flex:1;overflow-y:auto;padding:8px}
+.mcp-pane-wrap::-webkit-scrollbar{width:4px}
+.mcp-pane-wrap::-webkit-scrollbar-thumb{background:var(--t3);border-radius:2px}
+
+#srv-list .sc{
+  background:var(--card);border:1px solid var(--bdr);border-radius:6px;
+  margin-bottom:8px;overflow:hidden;cursor:pointer;transition:border-color .15s;
+}
+#srv-list .sc:hover{border-color:var(--bdr2)}
+#srv-list .sc-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 10px;
+}
+#srv-list .sc-name{font-size:12px;color:var(--t1);font-weight:500}
+#srv-list .sc-status{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--t2)}
+#srv-list .sdot{width:5px;height:5px;border-radius:50%}
+#srv-list .sdot.on{background:var(--green)}
+#srv-list .sc-count{font-size:10px;color:var(--t3);padding:0 10px 6px}
+#srv-list .sc-tools{
+  display:none;padding:6px 10px;border-top:1px solid var(--bdr);
+  flex-wrap:wrap;gap:4px;
+}
+#srv-list .sc.expanded .sc-tools{display:flex}
+#srv-list .sc-tool{
+  font-size:9px;background:var(--bg);border:1px solid var(--bdr);
+  border-radius:3px;padding:2px 5px;color:var(--t3);
+}
+#srv-list .sc-more{font-size:9px;color:var(--t3);padding:2px 5px}
+
+.mcp-add-btn{
+  width:100%;padding:8px;background:transparent;
+  border:1px dashed var(--bdr);border-radius:6px;
+  color:var(--t2);font-size:11px;cursor:pointer;
+  transition:border-color .15s,color .15s;font-family:var(--fm);
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.mcp-add-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Section 6: Conversation History */
+.s6{
+  height:220px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;
 }
 
-.rb{
-  grid-column:3;grid-row:3;
-  background:var(--surf);border-top:1px solid var(--bdr);
-  display:flex;align-items:center;justify-content:center;
-  flex-direction:column;gap:3px;
+.conv-history{flex:1;overflow-y:auto;padding:6px 0}
+.conv-history::-webkit-scrollbar{width:4px}
+.conv-history::-webkit-scrollbar-thumb{background:var(--t3);border-radius:2px}
+.conv-entry{
+  padding:6px 10px;border-bottom:1px solid var(--bdr);
+  cursor:pointer;transition:background .1s;
 }
-.rb span{
-  font-family:var(--fd);font-size:10px;color:var(--t3);
-  letter-spacing:0.1em;text-transform:uppercase;
-}
-.rb .ver{color:var(--t2);font-size:10px}
+.conv-entry:hover{background:var(--card)}
+.conv-role{font-size:9px;color:var(--t3);font-family:var(--fd);text-transform:uppercase;margin-bottom:2px}
+.conv-text{font-size:10px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.conv-entry.you .conv-role{color:var(--accent2)}
+.conv-entry.you .conv-text{color:var(--t1)}
+.conv-empty{padding:12px;font-size:11px;color:var(--t3);text-align:center;line-height:1.8}
 
-/* ── MODAL / ADD SERVER ─────────────────────────────────── */
+/* ── BOOT OVERLAY ───────────────────────────────────────── */
+.boot-overlay{
+  position:fixed;inset:0;z-index:5000;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  transition:opacity .5s;
+}
+.boot-overlay.hidden{opacity:0;pointer-events:none}
+.boot-logo-big{font-family:var(--fd);font-size:22px;font-weight:700;letter-spacing:.2em;color:var(--t1)}
+.boot-status{font-size:12px;color:var(--t3);font-family:var(--fm)}
+.boot-bar{width:200px;height:2px;background:var(--t3);border-radius:1px;overflow:hidden}
+.boot-bar-fill{height:100%;background:var(--accent);animation:bootbar 2s ease-in-out infinite}
+@keyframes bootbar{0%{width:0;margin-left:0}50%{width:60%;margin-left:20%}100%{width:0;margin-left:100%}}
+
+/* ── MODALS (shared) ─────────────────────────────────────── */
 .modal-bg{
-  position:fixed;inset:0;background:rgba(4,7,18,0.85);
-  display:none;align-items:center;justify-content:center;z-index:100;
+  position:fixed;inset:0;z-index:2000;
+  background:rgba(7,12,26,0.85);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;
 }
 .modal-bg.open{display:flex}
-.modal{
-  background:var(--surf);border:1px solid var(--bdr2);border-radius:8px;
-  padding:24px;width:420px;
+
+.modal-panel{
+  background:var(--card);border:1px solid var(--bdr2);border-radius:10px;
+  padding:24px;width:520px;max-width:95vw;max-height:80vh;
+  display:flex;flex-direction:column;gap:14px;
+  animation:modalIn .15s ease;
 }
-.modal-title{
-  font-family:var(--fd);font-size:13px;font-weight:700;
-  letter-spacing:0.1em;text-transform:uppercase;color:var(--t1);
-  margin-bottom:16px;
-}
-.modal pre{
-  background:var(--card);border:1px solid var(--bdr);border-radius:6px;
-  padding:12px;font-size:11px;color:var(--cyan);line-height:1.7;
-  overflow-x:auto;margin-bottom:16px;
-}
-.modal-close{
-  padding:6px 16px;background:transparent;border:1px solid var(--bdr2);
-  border-radius:4px;color:var(--t2);font-family:var(--fd);font-size:10px;
-  font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;
+@keyframes modalIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+.modal-title{font-family:var(--fd);font-size:14px;font-weight:600;color:var(--t1)}
+.modal-sub{font-size:11px;color:var(--t2);line-height:1.5}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+.modal-btn{
+  padding:7px 18px;border-radius:4px;cursor:pointer;
+  font-family:var(--fd);font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;
   transition:all .15s;
 }
-.modal-close:hover{border-color:var(--accent);color:var(--accent2)}
+.modal-btn.primary{background:var(--accent);border:1px solid var(--accent);color:#fff}
+.modal-btn.primary:hover{background:var(--accent2)}
+.modal-btn.secondary{background:transparent;border:1px solid var(--bdr2);color:var(--t2)}
+.modal-btn.secondary:hover{border-color:var(--t2);color:var(--t1)}
+.modal-btn.danger{background:transparent;border:1px solid rgba(255,68,85,0.4);color:var(--red)}
+.modal-btn.danger:hover{background:rgba(255,68,85,0.1)}
 
 /* ── LLM PICKER MODAL ───────────────────────────────────── */
-.llm-modal-bg{
-  position:fixed;inset:0;background:rgba(4,7,18,0.88);
-  display:none;align-items:center;justify-content:center;z-index:110;
-}
-.llm-modal-bg.open{display:flex}
-.llm-modal{
-  background:var(--surf);border:1px solid var(--bdr2);border-radius:8px;
-  padding:22px;width:460px;max-height:78vh;display:flex;flex-direction:column;
-}
-.llm-modal-title{
-  font-family:var(--fd);font-size:12px;font-weight:700;
-  letter-spacing:0.12em;text-transform:uppercase;color:var(--t1);
-  margin-bottom:4px;
-}
-.llm-modal-sub{font-size:11px;color:var(--t2);margin-bottom:14px}
+#llm-modal .modal-panel{width:580px;max-height:82vh}
+.llm-search-wrap{position:relative}
 .llm-search{
-  width:100%;background:var(--card);border:1px solid var(--bdr);
-  border-radius:4px;padding:7px 11px;color:var(--t1);
-  font-family:var(--fm);font-size:12px;outline:none;
-  transition:border-color .15s;margin-bottom:10px;flex-shrink:0;
+  width:100%;background:var(--bg);border:1px solid var(--bdr2);border-radius:6px;
+  padding:8px 12px;color:var(--t1);font-family:var(--fm);font-size:12px;
 }
-.llm-search:focus{border-color:var(--bdr3)}
+.llm-search:focus{outline:none;border-color:var(--accent)}
 .llm-search::placeholder{color:var(--t3)}
-.model-list{
-  overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:3px;
-}
-.model-list::-webkit-scrollbar{width:3px}
-.model-list::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px}
+.llm-status-msg{font-size:11px;min-height:16px;color:var(--t2)}
+.llm-status-msg.ok{color:var(--green)}
+.llm-status-msg.err{color:var(--red)}
+#model-list{flex:1;overflow-y:auto;max-height:340px}
+#model-list::-webkit-scrollbar{width:4px}
+#model-list::-webkit-scrollbar-thumb{background:var(--t3);border-radius:2px}
 .model-group-label{
-  font-family:var(--fd);font-size:9px;font-weight:700;
-  letter-spacing:0.2em;text-transform:uppercase;color:var(--t3);
-  padding:6px 4px 3px;
+  font-size:9px;font-family:var(--fd);text-transform:uppercase;letter-spacing:.1em;
+  color:var(--t3);padding:8px 4px 4px;
 }
 .model-item{
   display:flex;align-items:center;gap:10px;
-  padding:9px 12px;border-radius:5px;cursor:pointer;
-  border:1px solid transparent;transition:all .12s;
+  padding:9px 8px;border-radius:6px;cursor:pointer;
+  transition:background .12s;
 }
-.model-item:hover{background:var(--card2);border-color:var(--bdr)}
-.model-item.active{
-  background:rgba(61,143,255,0.08);
-  border-color:rgba(61,143,255,0.35);
-}
+.model-item:hover{background:var(--card)}
+.model-item.active{background:rgba(0,224,154,0.06)}
+.model-item.not-pulled{opacity:.65}
 .model-item.loading{opacity:.5;pointer-events:none}
-.mi-name{
-  font-family:var(--fm);font-size:12px;color:var(--t1);
-  flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+.mi-check,.mi-dl{width:18px;height:18px;color:var(--green);flex-shrink:0}
+.mi-dl{color:var(--accent)}
+.mi-name{font-size:12px;color:var(--t1);margin-bottom:1px;font-weight:500}
+.mi-desc{font-size:10px;color:var(--t2);line-height:1.4}
+.mi-badge{
+  font-size:9px;background:rgba(255,68,85,0.12);border:1px solid rgba(255,68,85,0.3);
+  border-radius:3px;padding:1px 5px;color:var(--red);
 }
-.mi-size{
-  font-size:10px;color:var(--t3);font-family:var(--fd);
-  letter-spacing:0.05em;flex-shrink:0;
+.mi-size{font-size:10px;color:var(--t3);flex-shrink:0}
+.mi-prov{font-size:9px;color:var(--t3);flex-shrink:0}
+.pull-bar-wrap{
+  width:100%;height:3px;background:var(--t3);border-radius:2px;margin-top:6px;overflow:hidden;
 }
-.mi-check{
-  width:14px;height:14px;flex-shrink:0;color:var(--green);
+.pull-bar{height:100%;background:var(--accent);border-radius:2px;width:0;transition:width .3s}
+
+/* ── ADD MCP SERVER MODAL ───────────────────────────────── */
+#modal .modal-panel{max-height:75vh}
+.mcp-catalog-scroll{flex:1;overflow-y:auto;max-height:340px}
+.mcp-catalog-scroll::-webkit-scrollbar{width:4px}
+.mcp-catalog-scroll::-webkit-scrollbar-thumb{background:var(--t3);border-radius:2px}
+
+/* ── SLASH POPUP ─────────────────────────────────────────── */
+.slash-popup{
+  position:fixed;z-index:3000;
+  background:var(--card);border:1px solid var(--bdr2);border-radius:8px;
+  box-shadow:0 12px 40px rgba(0,0,0,0.6);overflow:hidden;
+  max-height:280px;overflow-y:auto;
 }
-.mi-prov{
-  font-size:9px;padding:2px 6px;border-radius:3px;
-  font-family:var(--fd);letter-spacing:0.05em;text-transform:uppercase;
-  background:rgba(0,200,240,0.1);color:var(--cyan);flex-shrink:0;
-}
-.llm-modal-footer{
+.slash-hdr{
   display:flex;align-items:center;justify-content:space-between;
-  margin-top:14px;padding-top:12px;border-top:1px solid var(--bdr);
+  padding:6px 12px;background:var(--surf);border-bottom:1px solid var(--bdr);
   flex-shrink:0;
 }
-.llm-status-msg{font-size:11px;color:var(--t2);font-family:var(--fm)}
-.llm-status-msg.ok{color:var(--green)}
-.llm-status-msg.err{color:var(--red)}
-.llm-close-btn{
-  padding:5px 14px;background:transparent;border:1px solid var(--bdr2);
-  border-radius:4px;color:var(--t2);font-family:var(--fd);font-size:10px;
-  font-weight:600;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;
-  transition:all .15s;
-}
-.llm-close-btn:hover{border-color:var(--accent);color:var(--accent2)}
-.llm-pill-btn{cursor:pointer;transition:border-color .15s}
-.llm-pill-btn:hover{border-color:var(--accent2)!important}
+.slash-hdr-title{font-size:10px;font-family:var(--fd);color:var(--accent2);text-transform:uppercase;letter-spacing:.1em}
+.slash-hdr-hint{font-size:9px;color:var(--t3)}
+.slash-item{padding:8px 12px;cursor:pointer;transition:background .1s}
+.slash-item:hover,.slash-item.sel{background:var(--card2)}
+.slash-cmd{font-size:11px;color:var(--accent2);font-weight:500;margin-bottom:2px}
+.slash-desc{font-size:10px;color:var(--t2);line-height:1.4}
+.slash-item .hl{background:rgba(61,143,255,0.25);border-radius:2px;padding:0 1px}
 
-/* boot overlay */
-.boot-overlay{
-  position:fixed;inset:0;background:var(--bg);
+/* ── INSTALL SKILL MODAL ─────────────────────────────────── */
+#install-skill-modal .modal-panel{width:420px}
+.install-input{
+  background:var(--bg);border:1px solid var(--bdr2);border-radius:6px;
+  padding:8px 12px;color:var(--t1);font-family:var(--fm);font-size:12px;width:100%;
+}
+.install-input:focus{outline:none;border-color:var(--accent)}
+.install-err{font-size:11px;color:var(--red);min-height:16px}
+
+/* ── NPX MISSING MODAL ──────────────────────────────────── */
+.npx-modal-panel{max-width:400px}
+
+/* ── API KEY MODAL ──────────────────────────────────────── */
+.api-key-input{
+  background:var(--bg);border:1px solid var(--bdr2);border-radius:6px;
+  padding:8px 12px;color:var(--t1);font-family:var(--fm);font-size:12px;width:100%;
+}
+.api-key-input:focus{outline:none;border-color:var(--accent)}
+
+/* ── RESTART MODAL ──────────────────────────────────────── */
+.restart-modal-panel{max-width:400px}
+
+/* ── FILE VIEWER MODAL ──────────────────────────────────── */
+.fv-modal-bg{z-index:2500}
+.fv-panel{
+  background:var(--card);border:1px solid var(--bdr2);border-radius:10px;
+  width:92vw;max-width:1100px;height:82vh;
+  display:flex;flex-direction:column;overflow:hidden;
+  animation:modalIn .15s ease;
+}
+.fv-header{
+  display:flex;flex-direction:column;gap:6px;
+  padding:14px 18px 10px;
+  border-bottom:1px solid var(--bdr);flex-shrink:0;background:var(--surf);
+}
+.fv-title{font-family:var(--fd);font-size:12px;font-weight:600;color:var(--t1)}
+.fv-path-row{display:flex;gap:8px}
+.fv-path-input{
+  flex:1;background:var(--bg);border:1px solid var(--bdr2);border-radius:4px;
+  padding:5px 10px;color:var(--t1);font-family:var(--fm);font-size:11px;
+}
+.fv-path-input:focus{outline:none;border-color:var(--accent)}
+.fv-controls-row{display:flex;align-items:center;gap:8px}
+.fv-label{font-size:10px;color:var(--t2);display:flex;align-items:center;gap:5px}
+.fv-select{
+  background:var(--card);border:1px solid var(--bdr);border-radius:3px;
+  padding:3px 6px;color:var(--t1);font-family:var(--fm);font-size:10px;cursor:pointer;
+}
+.fv-btn{
+  padding:5px 12px;background:var(--card);border:1px solid var(--bdr2);border-radius:4px;
+  color:var(--t2);font-size:10px;font-family:var(--fd);cursor:pointer;
+  transition:all .15s;white-space:nowrap;
+}
+.fv-btn:hover{border-color:var(--accent);color:var(--accent)}
+.fv-close{color:var(--red)}
+.fv-close:hover{border-color:var(--red);background:rgba(255,68,85,0.08)}
+
+.fv-sheet-tabs{
+  display:flex;gap:0;flex-wrap:nowrap;overflow-x:auto;
+  padding:0 18px;border-bottom:1px solid var(--bdr);
+  background:var(--surf);flex-shrink:0;
+}
+.fv-sheet-tab{
+  padding:5px 14px;background:transparent;border:none;border-bottom:2px solid transparent;
+  color:var(--t2);font-size:10px;cursor:pointer;white-space:nowrap;
+  font-family:var(--fm);transition:color .15s,border-color .15s;
+}
+.fv-sheet-tab:hover{color:var(--t1)}
+.fv-sheet-tab.active{color:var(--accent2);border-bottom-color:var(--accent)}
+
+.fv-drop-zone{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:18px;z-index:200;transition:opacity .4s;
+  flex:1;cursor:pointer;gap:10px;
+  border:2px dashed var(--bdr);border-radius:8px;margin:16px 18px;
+  transition:border-color .15s;
 }
-.boot-overlay.hidden{opacity:0;pointer-events:none}
-.boot-logo{
-  font-family:var(--fd);font-size:22px;font-weight:700;
-  letter-spacing:0.2em;color:var(--t1);text-transform:uppercase;
+.fv-drop-zone:hover,.fv-drop-zone.drag-over{border-color:var(--accent)}
+.fv-drop-icon{font-size:36px;color:var(--t3)}
+.fv-drop-hint{font-size:13px;color:var(--t2)}
+.fv-drop-types{font-size:10px;color:var(--t3)}
+
+.fv-content-wrap{flex:1;overflow:auto;position:relative}
+.fv-content-wrap::-webkit-scrollbar{width:6px;height:6px}
+.fv-content-wrap::-webkit-scrollbar-thumb{background:var(--t3);border-radius:3px}
+.fv-content{min-width:100%}
+
+.fv-table{border-collapse:collapse;font-size:11px;min-width:100%}
+.fv-table th{
+  background:var(--surf);color:var(--t2);
+  padding:5px 10px;border:1px solid var(--bdr);font-weight:500;
+  white-space:nowrap;position:sticky;top:0;z-index:1;
 }
-.boot-status{
-  font-family:var(--fm);font-size:11px;color:var(--t2);
+.fv-table td{
+  padding:4px 10px;border:1px solid var(--bdr);color:var(--t1);
+  max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
-.boot-bar{
-  width:220px;height:2px;background:var(--bdr);border-radius:2px;overflow:hidden;
+.fv-table tr:hover td{background:var(--card2)}
+.fv-row-num{color:var(--t3);font-size:10px;min-width:36px}
+.fv-code{padding:16px 20px;font-size:11px;font-family:var(--fm);color:var(--t1);line-height:1.7;white-space:pre-wrap;word-break:break-all}
+.fv-spinner{text-align:center;padding:40px;font-size:24px;color:var(--t3);animation:spin 1.5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.fv-statusbar{
+  display:flex;align-items:center;gap:12px;
+  padding:5px 18px;border-top:1px solid var(--bdr);
+  background:var(--surf);flex-shrink:0;font-size:10px;color:var(--t3);
 }
-.boot-fill{
-  height:100%;background:var(--accent);border-radius:2px;
-  animation:bootfill 2s ease-in-out infinite alternate;
+#fv-status{flex:1}
+
+/* ── NEW TERMINAL MODAL ─────────────────────────────────── */
+.shell-type-modal{width:300px}
+.shell-choice{
+  display:flex;gap:10px;
+  padding:8px 0;
 }
-@keyframes bootfill{from{width:5%}to{width:90%}}
+.shell-choice-btn{
+  flex:1;padding:12px;
+  background:var(--card);border:1px solid var(--bdr2);border-radius:6px;
+  color:var(--t1);cursor:pointer;font-family:var(--fd);font-size:11px;
+  font-weight:600;letter-spacing:.08em;text-align:center;
+  transition:border-color .15s,background .15s;
+}
+.shell-choice-btn:hover{border-color:var(--accent);background:rgba(61,143,255,0.08)}
+.shell-icon{font-size:20px;display:block;margin-bottom:4px}
+
+/* ── MISC UTILITIES ─────────────────────────────────────── */
+.hidden{display:none!important}
+.sep{width:1px;height:18px;background:var(--bdr)}
 </style>
 </head>
 <body>
 <div class="scanlines"></div>
 
-<!-- BOOT OVERLAY -->
+<!-- ── BOOT OVERLAY ──────────────────────────────────────── -->
 <div class="boot-overlay" id="boot-overlay">
-  <div class="boot-logo">
-    <svg width="32" height="32" viewBox="0 0 26 26" fill="none" style="vertical-align:middle;margin-right:10px">
-      <ellipse cx="13" cy="16" rx="8" ry="9.5" fill="#d4e5ff"/>
-      <ellipse cx="13" cy="17.5" rx="5" ry="6.5" fill="#070c1a"/>
-      <ellipse cx="13" cy="19" rx="3.2" ry="4.5" fill="#d4e5ff"/>
-      <circle cx="13" cy="8" r="6.5" fill="#070c1a"/>
-      <circle cx="10.5" cy="7.2" r="1.7" fill="#d4e5ff"/>
-      <circle cx="15.5" cy="7.2" r="1.7" fill="#d4e5ff"/>
-      <circle cx="10.5" cy="7.2" r=".85" fill="#070c1a"/>
-      <circle cx="15.5" cy="7.2" r=".85" fill="#070c1a"/>
-      <polygon points="13,9.5 11.5,12 14.5,12" fill="#ffaa00"/>
-    </svg>
-    Iceberg
-  </div>
-  <div class="boot-bar"><div class="boot-fill"></div></div>
-  <div class="boot-status" id="boot-status">Connecting to backend…</div>
+  <div class="boot-logo-big">◈ ICEBERG</div>
+  <div class="boot-bar"><div class="boot-bar-fill"></div></div>
+  <div class="boot-status" id="boot-status">Connecting…</div>
 </div>
 
-<!-- LLM PICKER MODAL -->
-<div class="llm-modal-bg" id="llm-modal">
-  <div class="llm-modal">
-    <div class="llm-modal-title">Select Model</div>
-    <div class="llm-modal-sub" id="llm-modal-sub">Loading available models…</div>
-    <input class="llm-search" type="text" id="llm-search" placeholder="filter models…" oninput="filterModels(this.value)">
-    <div class="model-list" id="model-list">
-      <div style="font-size:11px;color:var(--t3);padding:8px 4px">Querying Ollama…</div>
-    </div>
-    <div class="llm-modal-footer">
-      <span class="llm-status-msg" id="llm-status-msg"></span>
-      <button class="llm-close-btn" onclick="closeLLMPicker()">close</button>
-    </div>
-  </div>
-</div>
-
-<!-- ADD SERVER MODAL -->
-<div class="modal-bg" id="modal">
-  <div class="modal">
-    <div class="modal-title">Connect MCP Server</div>
-    <p style="font-size:12px;color:var(--t2);margin-bottom:14px;line-height:1.6">
-      Select a server to add. Iceberg will restart after adding.
-    </p>
-    <div id="mcp-catalog-list" style="max-height:400px;overflow-y:auto">
-      <div style="font-size:11px;color:var(--t3);padding:8px 4px">Loading catalog…</div>
-    </div>
-    <button class="modal-close" onclick="closeModal()">close</button>
-  </div>
-</div>
-
-<!-- API KEY INPUT MODAL -->
-<div class="modal-bg" id="api-key-modal" style="display:none">
-  <div class="modal">
-    <div class="modal-title" id="api-key-title">Enter API Key</div>
-    <p style="font-size:12px;color:var(--t2);margin-bottom:14px;line-height:1.6" id="api-key-label">
-      This server requires an API key.
-    </p>
-    <input type="text" id="api-key-input" placeholder="Enter your key here" 
-           style="width:100%;padding:10px;background:var(--card);border:1px solid var(--bdr);border-radius:4px;color:var(--t1);font-family:var(--fm);font-size:12px;margin-bottom:14px">
-    <div style="display:flex;gap:10px;justify-content:flex-end">
-      <button class="modal-close" onclick="closeApiKeyModal()">cancel</button>
-      <button class="modal-close" onclick="submitApiKey()" style="background:var(--accent);color:#fff">add server</button>
-    </div>
-  </div>
-</div>
-
-<!-- RESTART CONFIRMATION MODAL -->
-<div class="modal-bg" id="restart-modal" style="display:none">
-  <div class="modal">
-    <div class="modal-title">Restart Required</div>
-    <p style="font-size:12px;color:var(--t2);margin-bottom:14px;line-height:1.6">
-      Server added successfully! Iceberg needs to restart to load the new MCP server.
-    </p>
-    <p style="font-size:12px;color:var(--green);margin-bottom:14px">
-      ✓ <span id="restart-server-name"></span> added to config.json
-    </p>
-    <p style="font-size:12px;color:var(--t2);margin-bottom:20px">
-      Would you like to restart now?
-    </p>
-    <div style="display:flex;gap:10px;justify-content:flex-end">
-      <button class="modal-close" onclick="closeRestartModal()">no, restart later</button>
-      <button class="modal-close" onclick="restartNow()" style="background:var(--accent);color:#fff">yes, restart now</button>
-    </div>
-  </div>
-</div>
-
-<!-- NPX MISSING MODAL -->
-<div class="modal-bg" id="npx-missing-modal" style="display:none">
-  <div class="modal">
-    <div class="modal-title">Node.js Required</div>
-    <p style="font-size:12px;color:var(--t2);margin-bottom:14px;line-height:1.6">
-      MCP servers require Node.js and npx to run, but they're not installed on your system.
-    </p>
-    <p style="font-size:12px;color:var(--t3);margin-bottom:20px;line-height:1.6">
-      Node.js is free and open-source. Installing it will give you access to thousands of MCP servers.
-    </p>
-    <p style="font-size:12px;color:var(--t2);margin-bottom:20px;font-weight:600">
-      Would you like to download and install Node.js now?
-    </p>
-    <div style="display:flex;gap:10px;justify-content:flex-end">
-      <button class="modal-close" onclick="closeNpxMissingModal()">no, maybe later</button>
-      <button class="modal-close" onclick="openNodeJsDownload()" style="background:var(--accent);color:#fff">yes, download Node.js</button>
-    </div>
-  </div>
-</div>
-
-<div class="shell">
-
-<!-- ── TOPBAR ── -->
-<header class="topbar">
+<!-- ── TOPBAR ────────────────────────────────────────────── -->
+<div class="topbar">
   <div class="logo">
-    <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
-      <ellipse cx="13" cy="16" rx="8" ry="9.5" fill="#d4e5ff"/>
-      <ellipse cx="13" cy="17.5" rx="5" ry="6.5" fill="#0b1124"/>
-      <ellipse cx="13" cy="19" rx="3.2" ry="4.5" fill="#d4e5ff"/>
-      <circle cx="13" cy="8" r="6.5" fill="#0b1124"/>
-      <circle cx="10.5" cy="7.2" r="1.7" fill="#d4e5ff"/>
-      <circle cx="15.5" cy="7.2" r="1.7" fill="#d4e5ff"/>
-      <circle cx="10.5" cy="7.2" r=".85" fill="#0b1124"/>
-      <circle cx="15.5" cy="7.2" r=".85" fill="#0b1124"/>
-      <polygon points="13,9.5 11.5,12 14.5,12" fill="#ffaa00"/>
+    <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+      <polygon points="11,2 20,18 2,18" stroke="rgba(61,143,255,0.7)" stroke-width="1.2" fill="none"/>
+      <polygon points="11,8 17,18 5,18" fill="rgba(61,143,255,0.12)" stroke="rgba(61,143,255,0.5)" stroke-width="1"/>
     </svg>
     Iceberg
   </div>
 
-  <div class="pill llm-pill-btn" onclick="openLLMPicker()" title="Click to switch model">
-    <span class="pdot off" id="llm-dot"></span>
+  <div class="pill" onclick="openLLMPicker()" title="Click to change model">
+    <span class="pdot g" id="llm-dot"></span>
     <span>LLM</span>
     <span class="pval" id="llm-val">—</span>
-    <svg width="8" height="8" viewBox="0 0 8 8" fill="none" style="margin-left:2px;opacity:.4">
-      <path d="M1 2.5l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
   </div>
-
   <div class="pill">
     <span class="pdot off" id="mcp-dot"></span>
     <span>MCP</span>
-    <span class="pval" id="mcp-val">—</span>
+    <span class="pval" id="mcp-val">0 connected</span>
   </div>
-
   <div class="pill">
     <span class="pdot off" id="tools-dot"></span>
     <span>Tools</span>
-    <span class="pval" id="tools-val">—</span>
+    <span class="pval" id="tools-val">0 registered</span>
   </div>
-
   <div class="pill">
     <span>Memory</span>
-    <span class="pval" id="memory-val">—</span>
+    <span class="pval" id="memory-val">0 entries</span>
   </div>
 
   <div class="spacer"></div>
 
-  <button class="tbtn" id="voice-btn" onclick="toggleVoice()">⬤ voice</button>
-  <button class="tbtn" onclick="openModal()">+ server</button>
-  <button class="tbtn danger" id="reset-btn" onclick="resetChat()">reset</button>
-</header>
+  <button class="tbtn" onclick="openFileViewer()" title="File Viewer">◫ Viewer</button>
+  <button class="tbtn active" id="voice-btn" onclick="toggleVoice()">◉ Voice</button>
+  <button class="tbtn danger" onclick="resetChat()">↺ Reset</button>
+</div>
 
-<!-- ── LEFT PANEL ── -->
-<aside class="lp">
-  <div class="plabel">MCP Servers</div>
-  <div id="srv-list">
-    <div style="font-size:11px;color:var(--t3);padding:8px 4px">Connecting…</div>
-  </div>
-  <div class="divider"></div>
-  <div class="plabel" style="margin-top:2px">Add Server</div>
-  <button class="add-btn" onclick="openModal()">+ connect mcp server</button>
-  <div style="flex:1"></div>
-  <div style="padding:4px 4px 0;font-family:var(--fd);font-size:10px;color:var(--t3);letter-spacing:0.1em;text-transform:uppercase;line-height:1.8">
-    local-first · private<br>offline-capable
-  </div>
-</aside>
+<!-- ── WORKSPACE ─────────────────────────────────────────── -->
+<div class="workspace">
 
-<!-- ── CHAT ── -->
-<main class="cc">
-  <div class="msgs" id="msgs">
-    <div class="msg a">
-      <div class="mmeta">Iceberg</div>
-      <div class="mbubble">
-        <span id="welcome-msg" style="color:var(--t2)">Connecting to backend…</span>
+  <!-- ── LEFT PANEL ─────────────────────────────────────── -->
+  <div class="lp">
+
+    <!-- S1: File Tree -->
+    <div class="s1">
+      <div class="panel-hdr">
+        <div class="panel-hdr-title">◫ Files</div>
+        <div class="panel-hdr-actions">
+          <button class="phbtn" onclick="loadFileTree()" title="Refresh">⟳</button>
+          <button class="phbtn" onclick="collapseAllTree()" title="Collapse all">⊟</button>
+        </div>
+      </div>
+      <div class="tree-scroll" id="file-tree">
+        <div class="tree-empty">Loading project files…</div>
       </div>
     </div>
+
+    <!-- S2: Terminal -->
+    <div class="s2">
+      <div class="term-tabbar" id="term-tabbar">
+        <!-- tabs injected by JS -->
+        <div class="term-tabbar-actions">
+          <button class="term-act-btn" onclick="addTerminal()" title="New terminal">+</button>
+          <div style="position:relative">
+            <button class="term-act-btn" onclick="toggleTermMenu()" title="Options" id="term-menu-btn">⋯</button>
+            <div class="term-menu" id="term-menu">
+              <div class="term-menu-item danger" onclick="deleteActiveTerminal()">
+                <span>🗑</span><span>Delete Terminal</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="term-body" id="term-body">
+        <!-- terminal instances injected by JS -->
+      </div>
+    </div>
+
+  </div><!-- /.lp -->
+
+  <!-- ── CENTER PANEL ───────────────────────────────────── -->
+  <div class="cp">
+
+    <!-- S3: File Editor -->
+    <div class="s3">
+      <div class="editor-tabbar" id="editor-tabbar">
+        <!-- editor tabs -->
+      </div>
+      <div class="editor-content" id="editor-content">
+        <div class="editor-empty" id="editor-empty">
+          <div class="editor-empty-icon">◫</div>
+          <div>Click a file in the tree to open it</div>
+        </div>
+      </div>
+      <div class="editor-statusbar" id="editor-statusbar" style="display:none">
+        <span class="editor-status-info" id="editor-status-info"></span>
+      </div>
+    </div>
+
+    <!-- S4: Chat -->
+    <div class="s4">
+
+      <!-- Messages -->
+      <div class="msgs" id="msgs">
+        <div class="msg a">
+          <div class="mmeta">Iceberg</div>
+          <div class="mbubble" id="welcome-msg">Initializing…</div>
+        </div>
+      </div>
+
+      <!-- Active skills strip -->
+      <div class="sk-strip" id="sk-strip">
+        <span class="sk-strip-label">Active skills:</span>
+        <div id="sk-strip-pills"></div>
+      </div>
+
+      <!-- Input row -->
+      <div class="chat-toolbar">
+        <div class="chat-input-wrap">
+          <textarea id="cinput" rows="1" disabled
+                    placeholder="Ask Iceberg anything… (/ for skills)"
+                    onkeydown="handleKey(event)"
+                    oninput="handleInputChange(event); autoResize(this)"></textarea>
+          <button id="send-btn" onclick="sendMsg()" class="disabled">Send</button>
+        </div>
+      </div>
+
+      <!-- Model + Prompt bar -->
+      <div class="chat-bottom-bar">
+        <!-- Model selector -->
+        <div class="chat-bottom-btn" id="model-btn" onclick="toggleModelDropdown()">
+          <span class="cbb-dot"></span>
+          <span id="model-btn-label">Model</span>
+          <span class="cbb-arrow">▲</span>
+          <div class="model-dropdown" id="model-dropdown" onclick="event.stopPropagation()">
+            <div class="mdrop-hdr">Select Model</div>
+            <div id="model-dropdown-list">
+              <div class="mdrop-item" style="color:var(--t3);font-size:10px">Loading…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Prompt selector -->
+        <div class="chat-bottom-btn" id="prompt-btn" onclick="togglePromptDropdown()">
+          <span>⊞ Prompts</span>
+          <span class="cbb-arrow" id="prompt-count-badge"></span>
+          <div class="prompt-dropdown" id="prompt-dropdown" onclick="event.stopPropagation()">
+            <div class="prompt-drop-hdr">
+              <span>Saved Prompts</span>
+              <button class="prompt-drop-add" onclick="openPromptForm()">+ Add</button>
+            </div>
+            <div class="prompt-list" id="prompt-list">
+              <div class="prompt-empty">No prompts yet.</div>
+            </div>
+            <div class="prompt-form" id="prompt-form">
+              <input class="prompt-form-input" id="prompt-form-name" placeholder="Prompt name…">
+              <textarea class="prompt-form-textarea" id="prompt-form-text" placeholder="Prompt text…"></textarea>
+              <div class="prompt-form-actions">
+                <button class="prompt-save-btn" onclick="savePrompt()">Save</button>
+                <button class="prompt-cancel-btn" onclick="closePromptForm()">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="spacer"></div>
+        <button class="tbtn" id="vbtn" onclick="toggleVoice()" style="font-size:9px">◉</button>
+      </div>
+
+    </div><!-- /.s4 -->
+  </div><!-- /.cp -->
+
+  <!-- ── RIGHT PANEL ─────────────────────────────────────── -->
+  <div class="rp">
+
+    <!-- S5: 3-tab panel -->
+    <div class="s5">
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-tools" onclick="switchRightTab('tools')">Tool Registry</button>
+        <button class="tab-btn" id="tab-skills" onclick="switchRightTab('skills')">Skills</button>
+        <button class="tab-btn" id="tab-mcp" onclick="switchRightTab('mcp')">MCP</button>
+      </div>
+
+      <!-- Tools pane -->
+      <div class="tab-pane active" id="pane-tools">
+        <div class="tool-search-wrap">
+          <input class="tool-search" placeholder="Filter tools…" oninput="filterTools(this.value)">
+        </div>
+        <div id="tlist"></div>
+      </div>
+
+      <!-- Skills pane -->
+      <div class="tab-pane" id="pane-skills">
+        <div class="sk-active-hdr" id="sk-active-hdr">
+          <span class="sk-active-label">Active</span>
+          <span id="sk-active-count"></span>
+        </div>
+        <div class="sk-search-wrap">
+          <input class="sk-search" id="sk-search" placeholder="Filter skills…" oninput="filterSkills(this.value)">
+          <button class="sk-install-btn" onclick="openInstallModal()">+ Install</button>
+        </div>
+        <div id="sk-list"></div>
+      </div>
+
+      <!-- MCP pane -->
+      <div class="tab-pane" id="pane-mcp">
+        <div class="mcp-pane-wrap">
+          <div id="srv-list"></div>
+          <button class="mcp-add-btn" onclick="openModal()">+ Add MCP Server</button>
+        </div>
+      </div>
+    </div><!-- /.s5 -->
+
+    <!-- S6: Conversation History -->
+    <div class="s6">
+      <div class="panel-hdr">
+        <div class="panel-hdr-title">◈ History</div>
+        <div class="panel-hdr-actions">
+          <button class="phbtn" onclick="refreshHistory()" title="Refresh">⟳</button>
+        </div>
+      </div>
+      <div class="conv-history" id="conv-history">
+        <div class="conv-empty">No history yet.</div>
+      </div>
+    </div>
+
+  </div><!-- /.rp -->
+
+</div><!-- /.workspace -->
+
+<!-- ── MODALS ──────────────────────────────────────────────── -->
+
+<!-- LLM Picker -->
+<div class="modal-bg" id="llm-modal">
+  <div class="modal-panel" style="width:580px;max-height:82vh">
+    <div class="modal-title">◈ Select Model</div>
+    <div class="modal-sub" id="llm-modal-sub">Loading models…</div>
+    <div class="llm-search-wrap">
+      <input class="llm-search" id="llm-search" placeholder="Filter models…" oninput="filterModels(this.value)">
+    </div>
+    <div class="llm-status-msg" id="llm-status-msg"></div>
+    <div id="model-list"></div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeLLMPicker()">Close</button>
+    </div>
   </div>
-</main>
-
-<!-- ── RIGHT PANEL ── -->
-<aside class="rp">
-  <div class="plabel">Tool Registry</div>
-  <input class="sinput" type="text" placeholder="filter tools…" id="tsearch" oninput="filterTools(this.value)">
-  <div id="tlist">
-    <div style="font-size:11px;color:var(--t3);padding:4px">Loading…</div>
-  </div>
-</aside>
-
-<!-- ── BOTTOM ROW ── -->
-<div class="lb"><span>local-first · offline-capable</span></div>
-
-<div class="ib">
-  <textarea class="cinput" id="cinput" placeholder="ask anything or give an instruction…" onkeydown="handleKey(event)" rows="1"></textarea>
-  <button class="ibtn" id="vbtn" title="Voice input" onclick="toggleVoice()">
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <rect x="4.5" y="1" width="5" height="8" rx="2.5" fill="currentColor"/>
-      <path d="M2 7c0 2.76 2.24 5 5 5s5-2.24 5-5" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-      <line x1="7" y1="12" x2="7" y2="14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-    </svg>
-  </button>
-  <button class="ibtn send" id="send-btn" onclick="sendMsg()" title="Send (Enter)">
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <path d="M1 7h12M8 2l5 5-5 5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </button>
 </div>
 
-<div class="rb">
-  <span class="ver">ICEBERG</span>
-  <span>v2.0 · mcp ready</span>
+<!-- Add MCP Server -->
+<div class="modal-bg" id="modal">
+  <div class="modal-panel">
+    <div class="modal-title">+ Add MCP Server</div>
+    <div class="modal-sub">Select a server to install. Requires Node.js / npx.</div>
+    <div class="mcp-catalog-scroll">
+      <div id="mcp-catalog-list"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
 </div>
 
-</div><!-- .shell -->
+<!-- npx Missing -->
+<div class="modal-bg" id="npx-missing-modal" style="display:none">
+  <div class="modal-panel npx-modal-panel">
+    <div class="modal-title">Node.js Required</div>
+    <div class="modal-sub">MCP servers require Node.js (npx). Install it to continue.</div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeNpxMissingModal()">Cancel</button>
+      <button class="modal-btn primary" onclick="openNodeJsDownload()">Download Node.js</button>
+    </div>
+  </div>
+</div>
+
+<!-- API Key -->
+<div class="modal-bg" id="api-key-modal" style="display:none">
+  <div class="modal-panel" style="width:400px">
+    <div class="modal-title" id="api-key-title">API Key Required</div>
+    <div class="modal-sub" id="api-key-label">This server requires an API key.</div>
+    <input class="api-key-input" id="api-key-input" type="password" placeholder="Paste your API key…">
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeApiKeyModal()">Cancel</button>
+      <button class="modal-btn primary" onclick="submitApiKey()">Add Server</button>
+    </div>
+  </div>
+</div>
+
+<!-- Restart Required -->
+<div class="modal-bg" id="restart-modal" style="display:none">
+  <div class="modal-panel restart-modal-panel">
+    <div class="modal-title">Server Added</div>
+    <div class="modal-sub">
+      <strong id="restart-server-name"></strong> has been configured.
+      Restart Iceberg to activate it.
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeRestartModal()">Later</button>
+      <button class="modal-btn primary" onclick="restartNow()">Restart Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- Install Skill -->
+<div class="modal-bg" id="install-skill-modal" style="display:none">
+  <div class="modal-panel" style="width:420px" id="install-skill-modal-panel">
+    <div class="modal-title">Install Skill</div>
+    <div class="modal-sub">Enter the path to a skill folder or .yaml file.</div>
+    <input class="install-input" id="install-skill-path" placeholder="/path/to/skill">
+    <div class="install-err" id="install-skill-err"></div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeInstallModal()">Cancel</button>
+      <button class="modal-btn primary" id="install-skill-btn" onclick="doInstallSkill()">install</button>
+    </div>
+  </div>
+</div>
+
+<!-- New Terminal Shell Picker -->
+<div class="modal-bg" id="shell-type-modal" style="display:none">
+  <div class="modal-panel shell-type-modal">
+    <div class="modal-title">New Terminal</div>
+    <div class="modal-sub">Choose shell type:</div>
+    <div class="shell-choice">
+      <div class="shell-choice-btn" onclick="confirmAddTerminal('cmd')">
+        <span class="shell-icon">⊞</span>CMD
+      </div>
+      <div class="shell-choice-btn" onclick="confirmAddTerminal('powershell')">
+        <span class="shell-icon">⬡</span>PowerShell
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn secondary" onclick="closeShellModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- File Viewer Modal -->
+<div class="modal-bg fv-modal-bg" id="fv-modal">
+  <div class="fv-panel">
+    <div class="fv-header">
+      <span class="fv-title">◫ File Viewer</span>
+      <div class="fv-path-row">
+        <input class="fv-path-input" id="fv-path" type="text"
+               placeholder="Paste an absolute file path and press Enter…"
+               onkeydown="if(event.key==='Enter')fvLoadPath()">
+        <button class="fv-btn" onclick="fvLoadPath()">Open</button>
+      </div>
+      <div class="fv-controls-row">
+        <label class="fv-label">Max rows
+          <select class="fv-select" id="fv-maxrows" onchange="fvApplyMaxRows()">
+            <option value="100">100</option>
+            <option value="200" selected>200</option>
+            <option value="500">500</option>
+            <option value="1000">1 000</option>
+            <option value="5000">5 000</option>
+          </select>
+        </label>
+        <label class="fv-label" style="margin-left:8px;cursor:pointer">
+          <input type="file" id="fv-file-input" style="display:none" onchange="fvHandleFileInput(event)">
+          <button class="fv-btn" onclick="document.getElementById('fv-file-input').click()">Browse…</button>
+        </label>
+        <button class="fv-btn fv-close" onclick="closeFileViewer()" style="margin-left:auto">✕ close</button>
+      </div>
+    </div>
+    <div class="fv-drop-zone" id="fv-drop-zone"
+         ondrop="fvHandleDrop(event)" ondragover="fvHandleDragOver(event)"
+         ondragleave="fvHandleDragLeave(event)"
+         onclick="document.getElementById('fv-file-input').click()">
+      <div class="fv-drop-icon">◫</div>
+      <div class="fv-drop-hint">Drop a file here, or click to browse</div>
+      <div class="fv-drop-types">Excel · CSV · PDF · Word · JSON · TXT · Python · and more</div>
+    </div>
+    <div class="fv-sheet-tabs" id="fv-sheet-tabs"></div>
+    <div class="fv-content-wrap">
+      <div class="fv-content" id="fv-content"></div>
+    </div>
+    <div class="fv-statusbar">
+      <span id="fv-status">Drop a file or paste a path to begin.</span>
+    </div>
+  </div>
+</div>
 
 <script>
-// ── State ────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
 const expanded = {};
-let isSending = false;
-let voiceOn = false;
+let isSending  = false;
+let voiceOn    = false;
 
 // ── Helpers ──────────────────────────────────────────────────
 function esc(s) {
   return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function setInputEnabled(on) {
@@ -712,19 +1386,22 @@ function setInputEnabled(on) {
   const btn = document.getElementById('send-btn');
   inp.disabled = !on;
   btn.disabled = !on;
-  if (!on) btn.classList.add('disabled');
-  else btn.classList.remove('disabled');
+  on ? btn.classList.remove('disabled') : btn.classList.add('disabled');
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 80) + 'px';
 }
 
 // ── Boot sequence ────────────────────────────────────────────
-// Poll /api/ready until the agent is up, then load everything.
 async function pollReady() {
   const el = document.getElementById('boot-status');
   let attempts = 0;
   while (true) {
     try {
       const res = await fetch('/api/ready');
-      const d = await res.json();
+      const d   = await res.json();
       if (d.ready) {
         if (d.error) {
           el.textContent = 'Agent error: ' + d.error;
@@ -733,11 +1410,9 @@ async function pollReady() {
         }
         return true;
       }
-    } catch(e) {
-      // server not up yet — normal on first load
-    }
+    } catch(e) { /* server not up yet */ }
     attempts++;
-    const msgs = ['Connecting to backend…', 'Loading LLM…', 'Discovering MCP servers…', 'Registering tools…', 'Almost ready…'];
+    const msgs = ['Connecting to backend…','Loading LLM…','Discovering MCP servers…','Registering tools…','Almost ready…'];
     el.textContent = msgs[Math.min(Math.floor(attempts / 3), msgs.length - 1)];
     await new Promise(r => setTimeout(r, 800));
   }
@@ -748,11 +1423,13 @@ async function boot() {
   const overlay = document.getElementById('boot-overlay');
   overlay.classList.add('hidden');
   setTimeout(() => overlay.style.display = 'none', 500);
-
   if (!ok) return;
-
-  // Load all live data in parallel
   await Promise.all([loadStatus(), loadServers(), loadTools()]);
+  loadSkills();
+  loadFileTree();
+  loadModelsForDropdown();
+  loadPrompts();
+  refreshHistory();
   setInputEnabled(true);
 }
 
@@ -762,28 +1439,23 @@ async function loadStatus() {
     const res = await fetch('/api/status');
     if (!res.ok) return;
     const d = await res.json();
-
-    document.getElementById('llm-val').textContent = d.llm;
-    document.getElementById('llm-dot').className = 'pdot ' + (d.llm_active ? 'g' : 'off');
-    document.getElementById('mcp-dot').className = 'pdot ' + (d.mcp_servers.length > 0 ? 'g' : 'off');
-    document.getElementById('mcp-val').textContent = d.mcp_servers.length + ' connected';
-    document.getElementById('tools-dot').className = 'pdot ' + (d.tools_count > 0 ? 'g' : 'off');
-    document.getElementById('tools-val').textContent = d.tools_count + ' registered';
+    document.getElementById('llm-val').textContent    = d.llm;
+    document.getElementById('llm-dot').className      = 'pdot ' + (d.llm_active ? 'g' : 'off');
+    document.getElementById('mcp-dot').className      = 'pdot ' + (d.mcp_servers.length > 0 ? 'g' : 'off');
+    document.getElementById('mcp-val').textContent    = d.mcp_servers.length + ' connected';
+    document.getElementById('tools-dot').className    = 'pdot ' + (d.tools_count > 0 ? 'g' : 'off');
+    document.getElementById('tools-val').textContent  = d.tools_count + ' registered';
     document.getElementById('memory-val').textContent = d.memory_count + ' entr' + (d.memory_count === 1 ? 'y' : 'ies');
-
     const wm = document.getElementById('welcome-msg');
     if (wm) {
       const mcpStr = d.mcp_servers.length
-        ? 'MCP: <span style="color:var(--accent2)">' + esc(d.mcp_servers.join(', ')) + '</span>. '
-        : '';
-      wm.innerHTML =
-        'Ready. LLM: <span style="color:var(--accent2)">' + esc(d.llm) + '</span>. ' +
-        mcpStr +
-        '<span style="color:var(--t2)">' + d.tools_count + ' tools. Type anything.</span>';
+        ? 'MCP: <span style="color:var(--accent2)">' + esc(d.mcp_servers.join(', ')) + '</span>. ' : '';
+      wm.innerHTML = 'Ready. LLM: <span style="color:var(--accent2)">' + esc(d.llm) + '</span>. ' +
+        mcpStr + '<span style="color:var(--t2)">' + d.tools_count + ' tools. Type anything.</span>';
     }
-  } catch(e) {
-    console.warn('[status]', e);
-  }
+    // Sync model button label
+    if (d.llm) document.getElementById('model-btn-label').textContent = d.llm.split('(')[1]?.replace(')','') || d.llm;
+  } catch(e) { console.warn('[status]', e); }
 }
 
 // ── MCP server cards ─────────────────────────────────────────
@@ -797,109 +1469,443 @@ async function loadServers() {
   try {
     const res = await fetch('/api/servers');
     if (!res.ok) return;
-    const servers = await res.json();
-    renderServers(servers);
-  } catch(e) {
-    console.warn('[servers]', e);
-  }
+    renderServers(await res.json());
+  } catch(e) { console.warn('[servers]', e); }
 }
 
 function renderServers(servers) {
   const sl = document.getElementById('srv-list');
   if (!servers.length) {
-    sl.innerHTML =
-      '<div style="font-size:11px;color:var(--t3);padding:8px 4px;line-height:1.9">' +
-      'No servers connected.<br>Add one in config.json<br>and restart.</div>';
+    sl.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:8px 4px;line-height:1.9">No servers connected.<br>Add one below.</div>';
     return;
   }
   sl.innerHTML = servers.map(srv => {
-    const toolsHtml = srv.tools.slice(0, 6)
-      .map(t => '<div class="sc-tool">' + esc(srv.name) + '__' + esc(t) + '</div>')
-      .join('');
-    const moreHtml = srv.tools.length > 6
-      ? '<div class="sc-more">+' + (srv.tools.length - 6) + ' more</div>'
-      : '';
-    return `
-      <div class="sc" id="srv-${esc(srv.name)}" onclick="toggleSrv('${esc(srv.name)}')">
-        <div class="sc-head">
-          <span class="sc-name">${esc(srv.name)}</span>
-          <div class="sc-status"><span class="sdot on"></span>connected</div>
-        </div>
-        <div class="sc-count">Tools: <span>${srv.tools.length}</span></div>
-        <div class="sc-tools" id="st-${esc(srv.name)}">
-          ${toolsHtml}${moreHtml}
-        </div>
-      </div>`;
+    const toolsHtml = srv.tools.slice(0,6)
+      .map(t => '<div class="sc-tool">' + esc(srv.name) + '__' + esc(t) + '</div>').join('');
+    const moreHtml  = srv.tools.length > 6
+      ? '<div class="sc-more">+' + (srv.tools.length - 6) + ' more</div>' : '';
+    return `<div class="sc" id="srv-${esc(srv.name)}" onclick="toggleSrv('${esc(srv.name)}')">
+      <div class="sc-head">
+        <span class="sc-name">${esc(srv.name)}</span>
+        <div class="sc-status"><span class="sdot on"></span>connected</div>
+      </div>
+      <div class="sc-count">Tools: <span>${srv.tools.length}</span></div>
+      <div class="sc-tools" id="st-${esc(srv.name)}">${toolsHtml}${moreHtml}</div>
+    </div>`;
   }).join('');
 }
 
 // ── Tool registry ─────────────────────────────────────────────
+const CAT_META = {
+  networking:  { label:'Networking',  icon:'◈', color:'#00c8f0', order:0  },
+  file_system: { label:'File System', icon:'◫', color:'#6ab0ff', order:1  },
+  system:      { label:'System',      icon:'⬡', color:'#ffaa00', order:2  },
+  custom:      { label:'Custom',      icon:'⬟', color:'#00e09a', order:3  },
+  reasoning:   { label:'Reasoning',   icon:'◉', color:'#d4e5ff', order:10 },
+  memory:      { label:'Memory',      icon:'◈', color:'#ffaa00', order:11 },
+  github:      { label:'GitHub',      icon:'⬟', color:'#00e09a', order:12 },
+};
+const CAT_OPEN_DEFAULT = new Set(['networking']);
+const _catOpen = {};
+
+function catKeyFromTool(t) {
+  if (t.category === 'web')    return 'networking';
+  if (t.category === 'file')   return 'file_system';
+  if (t.category === 'system') return 'system';
+  if (t.category === 'custom') return 'custom';
+  if (t.category === 'mcp') {
+    const srv = t.name.split('__')[0].toLowerCase().replace(/-/g,'_');
+    if (srv === 'sequential_thinking') return 'reasoning';
+    return srv;
+  }
+  return 'other';
+}
+function catMeta(key) {
+  return CAT_META[key] || { label:key.replace(/_/g,' '), icon:'⬡', color:'var(--t2)', order:99 };
+}
+function toggleCategory(key) {
+  _catOpen[key] = !_catOpen[key];
+  const group = document.getElementById('tcg-' + key);
+  if (group) group.classList.toggle('open', !!_catOpen[key]);
+}
 function filterTools(q) {
-  q = q.toLowerCase();
-  document.querySelectorAll('#tlist .trow').forEach(r => {
-    const nm = r.querySelector('.tname').textContent.toLowerCase();
-    r.style.display = (!q || nm.includes(q)) ? 'flex' : 'none';
-  });
-  document.querySelectorAll('#tlist .tglabel').forEach(g => {
-    if (!q) { g.style.display = ''; return; }
-    let el = g.nextElementSibling, vis = false;
-    while (el && !el.classList.contains('tglabel')) {
-      if (el.classList.contains('trow') && el.style.display !== 'none') vis = true;
-      el = el.nextElementSibling;
+  q = q.toLowerCase().trim();
+  document.querySelectorAll('#tlist .tc-group').forEach(group => {
+    const key = group.id.replace('tcg-','');
+    if (!q) {
+      group.classList.toggle('open', !!_catOpen[key]);
+      group.classList.remove('tc-hidden');
+      group.querySelectorAll('.tc-tool').forEach(r => r.classList.remove('tc-hidden'));
+      return;
     }
-    g.style.display = vis ? '' : 'none';
+    let anyVisible = false;
+    group.querySelectorAll('.tc-tool').forEach(r => {
+      const match = (r.dataset.name || '').toLowerCase().includes(q);
+      r.classList.toggle('tc-hidden', !match);
+      if (match) anyVisible = true;
+    });
+    group.classList.toggle('tc-hidden', !anyVisible);
+    if (anyVisible) group.classList.add('open');
   });
 }
-
 async function loadTools() {
   try {
-    const res = await fetch('/api/tools');
+    const res   = await fetch('/api/tools');
     if (!res.ok) return;
-    const tools = await res.json();
-    renderTools(tools);
+    renderTools(await res.json());
+  } catch(e) { console.warn('[tools]', e); }
+}
+const _allTools = {};
+function renderTools(tools) {
+  tools.forEach(t => { _allTools[t.name] = t; });
+  const groups = {};
+  tools.forEach(t => { const k = catKeyFromTool(t); if (!groups[k]) groups[k]=[]; groups[k].push(t); });
+  const keys = Object.keys(groups).sort((a,b) => {
+    const oa = catMeta(a).order ?? 99, ob = catMeta(b).order ?? 99;
+    return oa !== ob ? oa - ob : a.localeCompare(b);
+  });
+  const tlist = document.getElementById('tlist');
+  tlist.innerHTML = keys.map(key => {
+    const meta   = catMeta(key);
+    const isOpen = CAT_OPEN_DEFAULT.has(key);
+    if (isOpen) _catOpen[key] = true;
+    const toolRows = groups[key].map(t =>
+      `<div class="tc-tool" data-name="${esc(t.name)}"
+            title="${esc(t.description || t.name)}"
+            onclick="openToolForm('${esc(t.name)}')">
+        <span class="tc-dot" style="background:${meta.color}"></span>
+        <span class="tc-tname">${esc(t.name)}</span>
+      </div>`
+    ).join('');
+    return `<div class="tc-group${isOpen?' open':''}" id="tcg-${esc(key)}">
+      <div class="tc-header" onclick="toggleCategory('${esc(key)}')">
+        <span class="tc-arrow">▸</span>
+        <span class="tc-icon" style="color:${meta.color}">${meta.icon}</span>
+        <span class="tc-label">${esc(meta.label)}</span>
+        <span class="tc-count">${groups[key].length}</span>
+      </div>
+      <div class="tc-body">${toolRows}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Tool Form System ───────────────────────────────────────────
+const _TOOL_GREETINGS = {
+  scrape_paginated:'Web Scrape? Ok! I need a little more info…',
+  web_search:'Sure! What should I search for?',
+  read_file:'Reading a file — which one?',
+  create_file:'Creating a file — set it up below.',
+  delete_file:'⚠ Deleting a file — confirm the details.',
+  move_file:'Moving a file — source and destination?',
+  append_file:'Appending to a file — fill in the details.',
+  list_dir:'Listing a directory — which path?',
+  scan:'Directory scan — configure below.',
+};
+const _TF_LABELS = {
+  url:'Target URL', path:'File / Directory Path', src:'Source Path', dst:'Destination Path',
+  query:'Search Query', selector:'CSS Selector', extract:'Extract Mode',
+  pagination:'Pagination Type', max_pages:'Max Pages', next_button:'Next Button Selector',
+  content:'File Content', mode:'Scan Mode',
+};
+function _tfLabel(name) {
+  return _TF_LABELS[name] || name.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+function _buildFormField(arg, formId) {
+  const inputId  = `${formId}__${arg.name}`;
+  const reqBadge = arg.required
+    ? '<span class="tf-req">required</span>'
+    : '<span class="tf-opt">optional</span>';
+  let control = '';
+  switch (arg.name) {
+    case 'extract':
+      control = `<select class="tf-select" id="${inputId}">
+        <option value="text">text — visible text content</option>
+        <option value="href">href — link URLs</option>
+        <option value="html">html — raw HTML</option></select>`; break;
+    case 'pagination':
+      control = `<select class="tf-select" id="${inputId}">
+        <option value="auto">auto — detect automatically</option>
+        <option value="button">button — click a Next button</option>
+        <option value="url">url — URL page pattern</option>
+        <option value="scroll">scroll — infinite scroll</option></select>`; break;
+    case 'mode':
+      control = `<select class="tf-select" id="${inputId}">
+        <option value="LOW">LOW — directories only</option>
+        <option value="MEDIUM" selected>MEDIUM — dirs + files</option>
+        <option value="HIGH">HIGH — files + content previews</option></select>`; break;
+    case 'max_pages':
+      control = `<input class="tf-input" type="number" id="${inputId}" value="10" min="1" max="200">`; break;
+    case 'content':
+      control = `<textarea class="tf-input" id="${inputId}" rows="4"
+                   style="resize:vertical;font-size:11px"
+                   placeholder="${esc(arg.description||'')}"></textarea>`; break;
+    default:
+      control = `<input class="tf-input" type="text" id="${inputId}"
+                   placeholder="${esc(arg.description||'')}">`;
+  }
+  return `<div class="tf-group">
+    <div class="tf-label">${_tfLabel(arg.name)} ${reqBadge}</div>
+    ${control}
+  </div>`;
+}
+function openToolForm(toolName) {
+  const tool = _allTools[toolName];
+  if (!tool) {
+    appendMsg('a','<div class="mmeta">Iceberg</div><div class="mbubble" style="color:var(--red)">Unknown tool: ' + esc(toolName) + '</div>');
+    return;
+  }
+  const greeting = _TOOL_GREETINGS[toolName] || `Running <strong>${esc(toolName)}</strong> — fill in the parameters:`;
+  const formId   = 'tf_' + toolName.replace(/\W/g,'_') + '_' + Date.now();
+  const fields   = (tool.args||[]).map(a => _buildFormField(a, formId)).join('');
+  appendMsg('a',
+    `<div class="mmeta">Iceberg</div>` +
+    `<div class="mbubble">${greeting}` +
+      `<div class="tool-form" id="${formId}">${fields}` +
+        `<button class="tf-submit" onclick="submitToolForm('${esc(toolName)}','${formId}')">▶ Run ${esc(toolName)}</button>` +
+        `<div id="${formId}__result"></div>` +
+      `</div></div>`
+  );
+  setTimeout(() => {
+    const first = document.querySelector(`#${formId} .tf-input, #${formId} .tf-select`);
+    if (first) first.focus();
+  }, 50);
+}
+async function submitToolForm(toolName, formId) {
+  const tool = _allTools[toolName];
+  const args = tool ? (tool.args||[]) : [];
+  const collected = {};
+  let hasError = false;
+  for (const arg of args) {
+    const el = document.getElementById(`${formId}__${arg.name}`);
+    if (!el) continue;
+    el.classList.remove('tf-err');
+    const val = el.value.trim();
+    if (arg.required && !val) { el.classList.add('tf-err'); el.focus(); hasError = true; break; }
+    if (val) collected[arg.name] = val;
+  }
+  if (hasError) return;
+  const form = document.getElementById(formId);
+  if (form) form.querySelectorAll('input,select,textarea,button').forEach(el => el.disabled = true);
+  const resultEl = document.getElementById(`${formId}__result`);
+  if (resultEl) { resultEl.className = 'tf-result'; resultEl.textContent = 'Running…'; }
+  try {
+    const res  = await fetch('/api/tool/run', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ tool:toolName, args:collected }),
+    });
+    const data = await res.json();
+    if (resultEl) {
+      if (data.ok) { resultEl.className = 'tf-result'; resultEl.textContent = data.result || '(no output)'; }
+      else {
+        resultEl.className   = 'tf-result err';
+        resultEl.textContent = '✗ ' + (data.error || 'Unknown error');
+        if (form) form.querySelectorAll('input,select,textarea,button').forEach(el => el.disabled = false);
+      }
+    }
   } catch(e) {
-    console.warn('[tools]', e);
+    if (resultEl) { resultEl.className = 'tf-result err'; resultEl.textContent = '✗ Network error: ' + e.message; }
+    if (form) form.querySelectorAll('input,select,textarea,button').forEach(el => el.disabled = false);
   }
 }
 
-function renderTools(tools) {
-  const grouped = {};
-  tools.forEach(t => {
-    let key;
-    if (t.category === 'mcp') {
-      const server = t.name.split('__')[0];
-      key = 'MCP · ' + server;
-    } else {
-      key = t.category.charAt(0).toUpperCase() + t.category.slice(1);
-    }
-    if (!grouped[key]) grouped[key] = [];
-    grouped[key].push(t);
-  });
+// ── Skills System ─────────────────────────────────────────────
+let SKILLS_CATALOG = [];
+async function loadSkills() {
+  try {
+    const r    = await fetch('/api/skills');
+    if (!r.ok) throw new Error(r.status);
+    const data = await r.json();
+    SKILLS_CATALOG = (data.skills||[]).map(s => ({ ...s, cmd:'/'+s.slug.replace(/-/g,'') }));
+    const pane = document.getElementById('pane-skills');
+    if (pane && pane.classList.contains('active')) renderSkillsPanel('');
+  } catch(e) {
+    console.warn('[Skills]', e);
+    const el = document.getElementById('sk-list');
+    if (el) el.innerHTML = '<div style="font-size:11px;color:var(--red);padding:8px 4px">Could not load skills.</div>';
+  }
+}
+function openInstallModal() {
+  const modal = document.getElementById('install-skill-modal');
+  const input = document.getElementById('install-skill-path');
+  document.getElementById('install-skill-err').textContent = '';
+  input.value = '';
+  modal.style.display = 'flex';
+  setTimeout(() => input.focus(), 60);
+}
+function closeInstallModal() {
+  document.getElementById('install-skill-modal').style.display = 'none';
+}
+async function doInstallSkill() {
+  const input = document.getElementById('install-skill-path');
+  const err   = document.getElementById('install-skill-err');
+  const btn   = document.getElementById('install-skill-btn');
+  const path  = input.value.trim();
+  if (!path) { err.textContent = 'Enter a path.'; return; }
+  btn.textContent = 'installing…'; btn.disabled = true; err.textContent = '';
+  try {
+    const r    = await fetch('/api/skills/install', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({path}) });
+    const data = await r.json();
+    if (!r.ok || data.error) { err.textContent = data.error || 'Install failed.'; }
+    else { await loadSkills(); closeInstallModal(); }
+  } catch(e) { err.textContent = 'Network error: ' + e.message; }
+  finally { btn.textContent = 'install'; btn.disabled = false; }
+}
 
-  // Built-in groups first, MCP groups second, alphabetical within each
-  const keys = Object.keys(grouped).sort((a, b) => {
-    const aM = a.startsWith('MCP'), bM = b.startsWith('MCP');
-    if (aM !== bM) return aM ? 1 : -1;
-    return a.localeCompare(b);
-  });
+const _activeSkills = new Set();
+let _slashOpen = false, _slashIdx = 0, _slashMatches = [];
 
-  const tlist = document.getElementById('tlist');
-  tlist.innerHTML = keys.map(key =>
-    '<div class="tglabel">' + esc(key) + '</div>' +
-    grouped[key].map(t =>
-      '<div class="trow" title="' + esc(t.name) + '">' +
-        '<span class="tname">' + esc(t.name) + '</span>' +
-        '<span class="tcat ' + (t.category === 'mcp' ? 'mc' : 'bi') + '">' + esc(t.category) + '</span>' +
-      '</div>'
-    ).join('')
-  ).join('');
+// ── Right-panel tab switching ──────────────────────────────────
+let _skillsLoaded = false;
+function switchRightTab(tab) {
+  ['tools','skills','mcp'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('pane-' + t).classList.toggle('active', t === tab);
+  });
+  if (tab === 'skills' && !_skillsLoaded) {
+    _skillsLoaded = true;
+    loadSkills().then(() => renderSkillsPanel(''));
+  } else if (tab === 'skills') {
+    renderSkillsPanel('');
+  }
+}
+
+// ── Skills panel rendering ─────────────────────────────────────
+function renderSkillsPanel(query) {
+  const list = document.getElementById('sk-list');
+  const hdr  = document.getElementById('sk-active-hdr');
+  const cnt  = document.getElementById('sk-active-count');
+  const q    = (query||'').toLowerCase().trim();
+  const skills = q
+    ? SKILLS_CATALOG.filter(s => s.name.toLowerCase().includes(q) || s.desc.toLowerCase().includes(q) || s.tags.some(t => t.toLowerCase().includes(q)))
+    : SKILLS_CATALOG;
+  const activeCount = _activeSkills.size;
+  hdr.style.display = activeCount ? 'flex' : 'none';
+  cnt.textContent   = activeCount + ' active';
+  list.innerHTML = skills.map(s => {
+    const isActive = _activeSkills.has(s.id);
+    const tagHtml  = s.tags.map(t => `<span class="slash-tag ${t}">${t}</span>`).join('');
+    return `<div class="sk-item${isActive?' active':''}" data-id="${s.id}">
+      <div class="sk-info">
+        <div class="sk-name">${s.name}</div>
+        <div class="sk-desc">${s.desc}</div>
+        <div style="margin-top:3px">${tagHtml}</div>
+      </div>
+      <button class="sk-add${isActive?' added':''}" onclick="toggleSkill('${s.id}')"
+              title="${isActive?'Remove skill':'Add skill to task'}">${isActive?'✓':'+'}</button>
+    </div>`;
+  }).join('');
+}
+function filterSkills(query) { renderSkillsPanel(query); }
+function toggleSkill(id) {
+  if (_activeSkills.has(id)) _activeSkills.delete(id); else _activeSkills.add(id);
+  const q = document.getElementById('sk-search') ? document.getElementById('sk-search').value : '';
+  renderSkillsPanel(q);
+  renderSkillStrip();
+}
+function renderSkillStrip() {
+  const strip = document.getElementById('sk-strip');
+  const pills = document.getElementById('sk-strip-pills');
+  if (!_activeSkills.size) { strip.style.display='none'; return; }
+  strip.style.display = 'flex';
+  pills.innerHTML = [..._activeSkills].map(id => {
+    const s = SKILLS_CATALOG.find(x => x.id === id);
+    if (!s) return '';
+    return `<span class="sk-pill">${s.name}<button class="sk-pill-x" onclick="toggleSkill('${s.id}')" title="Remove">×</button></span>`;
+  }).join('');
+}
+
+// ── Slash popup ────────────────────────────────────────────────
+function _buildSlashPopup() {
+  const el = document.createElement('div');
+  el.id = 'slash-popup'; el.className = 'slash-popup'; el.style.display = 'none';
+  el.innerHTML = `<div class="slash-hdr">
+    <span class="slash-hdr-title">/ Skills</span>
+    <span class="slash-hdr-hint">↑↓ navigate · Enter select · Esc close</span>
+  </div><div id="slash-list"></div>`;
+  document.body.appendChild(el);
+  return el;
+}
+function getSlashPopup() { return document.getElementById('slash-popup') || _buildSlashPopup(); }
+function _positionSlashPopup() {
+  const textarea = document.getElementById('cinput');
+  const popup    = getSlashPopup();
+  const rect     = textarea.getBoundingClientRect();
+  popup.style.left   = rect.left + 'px';
+  popup.style.width  = Math.min(rect.width, 380) + 'px';
+  popup.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
+}
+function showSlashPopup(query) {
+  _slashOpen    = true; _slashIdx = 0;
+  _slashMatches = SKILLS_CATALOG.filter(s =>
+    !query || s.name.toLowerCase().includes(query) ||
+    s.cmd.toLowerCase().includes(query) || s.desc.toLowerCase().includes(query) ||
+    s.tags.some(t => t.toLowerCase().includes(query))
+  ).slice(0,8);
+  _positionSlashPopup();
+  getSlashPopup().style.display = 'block';
+  renderSlashList(query);
+}
+function renderSlashList(query) {
+  const list = document.getElementById('slash-list');
+  if (!_slashMatches.length) { list.innerHTML = '<div style="padding:8px 12px;font-size:11px;color:var(--t3)">No matches</div>'; return; }
+  list.innerHTML = _slashMatches.map((s,i) => {
+    const isActive = _activeSkills.has(s.id);
+    const tagHtml  = s.tags.map(t => `<span class="slash-tag ${t}${isActive?' ON':''}">${t}</span>`).join('');
+    const q        = (query||'').toLowerCase();
+    const cmd      = q && s.cmd.toLowerCase().includes(q)
+      ? s.cmd.replace(new RegExp(`(${q})`, 'gi'),'<span class="hl">$1</span>') : s.cmd;
+    return `<div class="slash-item${i===_slashIdx?' sel':''}" onclick="selectSlashSkill(${i})"
+                 onmouseover="_slashIdx=${i};renderSlashList('${(query||'').replace(/'/g,"\\'")}')">
+      <div class="slash-cmd">${cmd}</div>
+      <div class="slash-desc">${s.desc}</div>
+      <div style="margin-top:2px">${tagHtml}</div>
+    </div>`;
+  }).join('');
+}
+function hideSlashPopup() {
+  _slashOpen = false;
+  const popup = document.getElementById('slash-popup');
+  if (popup) popup.style.display = 'none';
+}
+function selectSlashSkill(idx) {
+  const s = _slashMatches[idx];
+  if (!s) return;
+  if (!_activeSkills.has(s.id)) {
+    _activeSkills.add(s.id);
+    renderSkillStrip();
+    const pane = document.getElementById('pane-skills');
+    if (pane && pane.classList.contains('active')) renderSkillsPanel('');
+  }
+  const ta = document.getElementById('cinput');
+  const slashPos = ta.value.lastIndexOf('/');
+  if (slashPos !== -1) ta.value = ta.value.slice(0, slashPos);
+  hideSlashPopup(); ta.focus();
+}
+function navigateSlash(dir) {
+  if (!_slashOpen || !_slashMatches.length) return;
+  _slashIdx = (_slashIdx + dir + _slashMatches.length) % _slashMatches.length;
+  const ta = document.getElementById('cinput');
+  const slashPos = ta.value.lastIndexOf('/');
+  const query = slashPos !== -1 ? ta.value.slice(slashPos+1).toLowerCase() : '';
+  renderSlashList(query);
+}
+function handleInputChange(e) {
+  const val      = e.target.value;
+  const slashPos = val.lastIndexOf('/');
+  if (slashPos !== -1) showSlashPopup(val.slice(slashPos+1).toLowerCase());
+  else hideSlashPopup();
 }
 
 // ── Chat ──────────────────────────────────────────────────────
 function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+  if (_slashOpen) {
+    if (e.key==='ArrowDown') { e.preventDefault(); navigateSlash(1); return; }
+    if (e.key==='ArrowUp')   { e.preventDefault(); navigateSlash(-1); return; }
+    if (e.key==='Enter')     { e.preventDefault(); selectSlashSkill(_slashIdx); return; }
+    if (e.key==='Escape')    { e.preventDefault(); hideSlashPopup(); return; }
+  }
+  if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
 }
-
 function appendMsg(role, html) {
   const m = document.getElementById('msgs');
   const d = document.createElement('div');
@@ -909,435 +1915,922 @@ function appendMsg(role, html) {
   m.scrollTop = m.scrollHeight;
   return d;
 }
-
 async function sendMsg() {
   const inp = document.getElementById('cinput');
   const txt = inp.value.trim();
   if (!txt || isSending) return;
-  inp.value = '';
+
+  // Prepend any active prompts
+  let fullMsg = txt;
+  const activePrompts = _prompts.filter(p => p.enabled);
+  if (activePrompts.length) {
+    const promptPrefix = activePrompts.map(p => p.text).join('\n\n');
+    fullMsg = promptPrefix + '\n\n' + txt;
+  }
+
+  inp.value = ''; autoResize(inp);
   isSending = true;
   setInputEnabled(false);
-
-  appendMsg('u', '<div class="mmeta">You</div><div class="mbubble">' + esc(txt) + '</div>');
-
-  const ty = appendMsg('a',
+  appendMsg('u','<div class="mmeta">You</div><div class="mbubble">' + esc(txt) + '</div>');
+  const bubble = appendMsg('a',
     '<div class="mmeta">Iceberg</div>' +
     '<div class="typing-wrap"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>'
   );
-
   try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: txt }),
+    const res = await fetch('/api/chat/stream', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ message: fullMsg }),
     });
-    ty.remove();
-
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-
-    // Filter out empty strings (narration separator blanks), join with newlines
-    const lines = (data.responses || []).filter(r => r !== null && r !== undefined);
-    const text = lines.join('\n').trim();
-
-    appendMsg('a',
-      '<div class="mmeta">Iceberg</div>' +
-      '<div class="mbubble">' + esc(text).replace(/\n/g, '<br>') + '</div>'
-    );
-
-    // Refresh status counters (memory count changes)
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '', msgDiv = null, accumulated = '';
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream:true });
+      const frames = buf.split('\n\n');
+      buf = frames.pop();
+      for (const frame of frames) {
+        const line = frame.trim();
+        if (!line.startsWith('data: ')) continue;
+        let event;
+        try { event = JSON.parse(line.slice(6)); } catch { continue; }
+        if (event.type==='token' || event.type==='result') {
+          if (!msgDiv) {
+            bubble.innerHTML = '<div class="mmeta">Iceberg</div><div class="mbubble"></div>';
+            msgDiv = bubble.querySelector('.mbubble');
+          }
+          accumulated += event.text;
+          msgDiv.innerHTML = esc(accumulated).replace(/\n/g,'<br>');
+          document.getElementById('msgs').scrollTop = document.getElementById('msgs').scrollHeight;
+        }
+        if (event.type==='error') {
+          bubble.innerHTML = '<div class="mmeta">Iceberg</div><div class="mbubble" style="color:var(--red)">Error: ' + esc(event.text) + '</div>';
+        }
+        if (event.type==='done') {
+          if (!msgDiv) bubble.innerHTML = '<div class="mmeta">Iceberg</div><div class="mbubble">…</div>';
+          break;
+        }
+      }
+    }
     loadStatus();
+    refreshHistory();
   } catch(e) {
-    ty.remove();
-    appendMsg('a',
-      '<div class="mmeta">Iceberg</div>' +
-      '<div class="mbubble" style="color:var(--red)">' +
-        'Error: ' + esc(String(e)) + '<br>' +
-        '<span style="color:var(--t3);font-size:11px">Is server.py still running?</span>' +
-      '</div>'
-    );
+    bubble.innerHTML = '<div class="mmeta">Iceberg</div><div class="mbubble" style="color:var(--red)">Error: ' + esc(String(e)) + '<br><span style="color:var(--t3);font-size:11px">Is server.py still running?</span></div>';
   } finally {
-    isSending = false;
-    setInputEnabled(true);
+    isSending = false; setInputEnabled(true);
     document.getElementById('cinput').focus();
   }
 }
-
-// ── Reset ─────────────────────────────────────────────────────
 async function resetChat() {
   if (!confirm('Reset the conversation? This cannot be undone.')) return;
-  try { await fetch('/api/reset', { method: 'POST' }); } catch(e) {}
-  const m = document.getElementById('msgs');
-  m.innerHTML =
-    '<div class="msg a"><div class="mmeta">Iceberg</div>' +
-    '<div class="mbubble">Conversation reset. Ready.</div></div>';
+  try { await fetch('/api/reset', { method:'POST' }); } catch(e) {}
+  document.getElementById('msgs').innerHTML =
+    '<div class="msg a"><div class="mmeta">Iceberg</div><div class="mbubble">Conversation reset. Ready.</div></div>';
+  document.getElementById('conv-history').innerHTML = '<div class="conv-empty">No history yet.</div>';
 }
-
-// ── Voice toggle ──────────────────────────────────────────────
 function toggleVoice() {
   voiceOn = !voiceOn;
   const vb = document.getElementById('voice-btn');
   const ib = document.getElementById('vbtn');
-  if (voiceOn) {
-    vb.classList.add('active');
-    ib.style.borderColor = 'var(--green)';
-    ib.style.color = 'var(--green)';
-  } else {
-    vb.classList.remove('active');
-    ib.style.borderColor = '';
-    ib.style.color = '';
-  }
+  voiceOn ? (vb.classList.add('active'), ib.style.borderColor='var(--green)', ib.style.color='var(--green)')
+          : (vb.classList.remove('active'), ib.style.borderColor='', ib.style.color='');
 }
 
-// ── Add-server modal ──────────────────────────────────────────
+// ── Add MCP Server modal ─────────────────────────────────────
 let _pendingServer = null;
-
 async function openModal() {
-  // First, check if npx is installed
   try {
-    const res = await fetch('/api/mcp/check-npx');
+    const res  = await fetch('/api/mcp/check-npx');
     const data = await res.json();
-    
-    if (!data.installed) {
-      // Show npx missing modal instead
-      showNpxMissingModal();
-      return;
-    }
-    
-    // npx is installed, proceed to catalog
+    if (!data.installed) { showNpxMissingModal(); return; }
     document.getElementById('modal').classList.add('open');
     await loadMCPCatalog();
   } catch(e) {
-    console.error('Error checking npx:', e);
-    // If check fails, still show catalog (fail open)
     document.getElementById('modal').classList.add('open');
     await loadMCPCatalog();
   }
 }
-
-function closeModal() {
-  document.getElementById('modal').classList.remove('open');
-}
-
-document.getElementById('modal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
-
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+document.getElementById('modal').addEventListener('click', function(e) { if (e.target===this) closeModal(); });
 function showNpxMissingModal() {
   document.getElementById('npx-missing-modal').style.display = 'flex';
   setTimeout(() => document.getElementById('npx-missing-modal').classList.add('open'), 10);
 }
-
 function closeNpxMissingModal() {
   document.getElementById('npx-missing-modal').classList.remove('open');
-  setTimeout(() => document.getElementById('npx-missing-modal').style.display = 'none', 300);
+  setTimeout(() => document.getElementById('npx-missing-modal').style.display='none', 300);
 }
-
-function openNodeJsDownload() {
-  window.open('https://nodejs.org/en/download/', '_blank');
-  closeNpxMissingModal();
-}
-
+function openNodeJsDownload() { window.open('https://nodejs.org/en/download/','_blank'); closeNpxMissingModal(); }
 async function loadMCPCatalog() {
   const listEl = document.getElementById('mcp-catalog-list');
   listEl.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:8px 4px">Loading catalog…</div>';
-  
   try {
     const res = await fetch('/api/mcp/catalog');
     if (!res.ok) throw new Error('Failed to load catalog');
-    const data = await res.json();
-    renderMCPCatalog(data.servers);
+    renderMCPCatalog((await res.json()).servers);
   } catch(e) {
     listEl.innerHTML = '<div style="font-size:11px;color:var(--red);padding:8px 4px">Failed to load catalog: ' + esc(String(e)) + '</div>';
   }
 }
-
 function renderMCPCatalog(servers) {
   const listEl = document.getElementById('mcp-catalog-list');
-  
-  if (!servers || servers.length === 0) {
-    listEl.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:8px 4px">No servers available.</div>';
-    return;
-  }
-  
+  if (!servers || !servers.length) { listEl.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:8px 4px">No servers available.</div>'; return; }
   listEl.innerHTML = servers.map(srv => `
     <div style="display:flex;align-items:center;gap:12px;padding:10px;border:1px solid var(--bdr);border-radius:6px;margin-bottom:8px;background:var(--card)">
       <div style="flex:1">
         <div style="font-size:13px;color:var(--t1);font-weight:500;margin-bottom:4px">${esc(srv.display_name)}</div>
         <div style="font-size:11px;color:var(--t2);line-height:1.5">${esc(srv.description)}</div>
       </div>
-      <button onclick="addMCPServer('${esc(srv.name)}', ${srv.requires_api_key})" 
+      <button onclick="addMCPServer('${esc(srv.name)}',${srv.requires_api_key})"
               style="padding:6px 14px;background:var(--accent);border:none;border-radius:4px;color:#fff;font-family:var(--fd);font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;flex-shrink:0">
         + add
       </button>
-    </div>
-  `).join('');
+    </div>`
+  ).join('');
 }
-
 function addMCPServer(serverName, requiresApiKey) {
   _pendingServer = serverName;
-  
-  if (requiresApiKey) {
-    // Show API key input modal
-    openApiKeyModal(serverName);
-  } else {
-    // Add directly without API key
-    submitMCPServer(serverName, '');
-  }
+  requiresApiKey ? openApiKeyModal(serverName) : submitMCPServer(serverName,'');
 }
-
 function openApiKeyModal(serverName) {
-  // Find server in catalog to get label
-  fetch('/api/mcp/catalog')
-    .then(res => res.json())
-    .then(data => {
-      const srv = data.servers.find(s => s.name === serverName);
-      if (srv) {
-        document.getElementById('api-key-title').textContent = `Add ${srv.display_name}`;
-        document.getElementById('api-key-label').textContent = srv.api_key_label || 'This server requires an API key.';
-      }
-    });
-  
+  fetch('/api/mcp/catalog').then(r => r.json()).then(data => {
+    const srv = data.servers.find(s => s.name===serverName);
+    if (srv) {
+      document.getElementById('api-key-title').textContent = `Add ${srv.display_name}`;
+      document.getElementById('api-key-label').textContent = srv.api_key_label || 'This server requires an API key.';
+    }
+  });
   document.getElementById('api-key-input').value = '';
   document.getElementById('api-key-modal').style.display = 'flex';
   setTimeout(() => document.getElementById('api-key-modal').classList.add('open'), 10);
 }
-
 function closeApiKeyModal() {
   document.getElementById('api-key-modal').classList.remove('open');
-  setTimeout(() => document.getElementById('api-key-modal').style.display = 'none', 300);
+  setTimeout(() => document.getElementById('api-key-modal').style.display='none', 300);
   _pendingServer = null;
 }
-
 function submitApiKey() {
   const apiKey = document.getElementById('api-key-input').value.trim();
-  if (!apiKey) {
-    alert('Please enter an API key');
-    return;
-  }
+  if (!apiKey) { alert('Please enter an API key'); return; }
   submitMCPServer(_pendingServer, apiKey);
 }
-
 async function submitMCPServer(serverName, apiKey) {
-  closeApiKeyModal();
-  closeModal();
-  
+  closeApiKeyModal(); closeModal();
   try {
-    const res = await fetch('/api/mcp/add', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        server_name: serverName,
-        api_key: apiKey
-      })
+    const res  = await fetch('/api/mcp/add', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ server_name:serverName, api_key:apiKey }),
     });
-    
     const data = await res.json();
-    
-    if (!res.ok) {
-      alert('Error adding server: ' + (data.error || 'Unknown error'));
-      return;
-    }
-    
-    // Show restart confirmation modal
+    if (!res.ok) { alert('Error adding server: ' + (data.error||'Unknown error')); return; }
     document.getElementById('restart-server-name').textContent = serverName;
     document.getElementById('restart-modal').style.display = 'flex';
     setTimeout(() => document.getElementById('restart-modal').classList.add('open'), 10);
-    
-  } catch(e) {
-    alert('Error adding server: ' + String(e));
-  }
+  } catch(e) { alert('Error adding server: ' + String(e)); }
 }
 
+// ── Restart modal ─────────────────────────────────────────────
 function closeRestartModal() {
   document.getElementById('restart-modal').classList.remove('open');
-  setTimeout(() => document.getElementById('restart-modal').style.display = 'none', 300);
+  setTimeout(() => document.getElementById('restart-modal').style.display='none', 300);
 }
-
 async function restartNow() {
   closeRestartModal();
-  
-  // Show loading overlay
   const overlay = document.getElementById('boot-overlay');
-  overlay.style.display = 'flex';
-  overlay.classList.remove('hidden');
-  document.getElementById('boot-status').textContent = 'Restarting Iceberg…';
-  
-  try {
-    await fetch('/api/restart', { method: 'POST' });
-    
-    // Wait a moment for server to start shutting down
+  document.getElementById('boot-status').textContent = 'Restarting…';
+  overlay.style.display='flex'; overlay.classList.remove('hidden');
+  try { await fetch('/api/restart', { method:'POST' }); } catch(e) {}
+  let attempts = 0;
+  while (attempts < 60) {
+    try { const res = await fetch('/api/ready'); if (res.ok) { window.location.reload(); return; } } catch(e) {}
+    attempts++;
     await new Promise(r => setTimeout(r, 1000));
-    
-    // Poll until server is back up
-    let attempts = 0;
-    while (attempts < 60) {
-      try {
-        const res = await fetch('/api/ready');
-        if (res.ok) {
-          // Server is back! Reload the page
-          window.location.reload();
-          return;
-        }
-      } catch(e) {
-        // Server not up yet
-      }
-      attempts++;
-      await new Promise(r => setTimeout(r, 1000));
-    }
-    
-    // Timeout - suggest manual reload
-    document.getElementById('boot-status').textContent = 'Restart timed out. Please refresh manually.';
-    document.getElementById('boot-status').style.color = 'var(--red)';
-    
-  } catch(e) {
-    document.getElementById('boot-status').textContent = 'Restart failed: ' + String(e);
-    document.getElementById('boot-status').style.color = 'var(--red)';
   }
+  document.getElementById('boot-status').textContent = 'Restart timed out. Please refresh manually.';
+  document.getElementById('boot-status').style.color = 'var(--red)';
 }
 
-// ── LLM picker ───────────────────────────────────────────────
-let _allModels = [];
-let _currentModel = '';
-
+// ── LLM Picker (full modal) ───────────────────────────────────
+let _allModels = [], _currentModel = '';
 async function openLLMPicker() {
   document.getElementById('llm-modal').classList.add('open');
   document.getElementById('llm-status-msg').textContent = '';
   document.getElementById('llm-status-msg').className = 'llm-status-msg';
   document.getElementById('llm-search').value = '';
-  document.getElementById('model-list').innerHTML =
-    '<div style="font-size:11px;color:var(--t3);padding:8px 4px">Loading…</div>';
-
-  // Fetch current model and available models in parallel
+  document.getElementById('model-list').innerHTML = '<div style="font-size:11px;color:var(--t3);padding:8px 4px">Loading…</div>';
   const [statusRes, modelsRes] = await Promise.allSettled([
     fetch('/api/status').then(r => r.json()),
     fetch('/api/llm/models').then(r => r.json()),
   ]);
-
-  if (statusRes.status === 'fulfilled') {
-    _currentModel = statusRes.value.llm || '';
-  }
-
-  if (modelsRes.status === 'fulfilled') {
+  if (statusRes.status==='fulfilled') _currentModel = statusRes.value.llm || '';
+  if (modelsRes.status==='fulfilled') {
     _allModels = modelsRes.value.models || [];
-    const sub = _allModels.length
-      ? `${_allModels.length} model${_allModels.length !== 1 ? 's' : ''} available · current: ${_currentModel || 'none'}`
-      : 'No Ollama models found — is Ollama running?';
-    document.getElementById('llm-modal-sub').textContent = sub;
+    const installedCount = _allModels.filter(m => m.pulled!==false).length;
+    const catalogCount   = _allModels.filter(m => m.pulled===false).length;
+    document.getElementById('llm-modal-sub').textContent = installedCount
+      ? `${installedCount} installed · ${catalogCount} in catalog · active: ${_currentModel || 'none'}`
+      : 'No Ollama models installed — pull one from the catalog below.';
     renderModels(_allModels);
   } else {
     document.getElementById('llm-modal-sub').textContent = 'Could not reach Ollama.';
-    document.getElementById('model-list').innerHTML =
-      '<div style="font-size:11px;color:var(--t3);padding:8px 4px">Is Ollama running on localhost:11434?</div>';
+    document.getElementById('model-list').innerHTML = '<div style="font-size:11px;color:var(--t3);padding:8px 4px">Is Ollama running on localhost:11434?</div>';
   }
 }
-
-function closeLLMPicker() {
-  document.getElementById('llm-modal').classList.remove('open');
-}
-document.getElementById('llm-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeLLMPicker();
-});
-
+function closeLLMPicker() { document.getElementById('llm-modal').classList.remove('open'); }
+document.getElementById('llm-modal').addEventListener('click', function(e) { if (e.target===this) closeLLMPicker(); });
 function filterModels(q) {
   q = q.toLowerCase();
-  const filtered = q ? _allModels.filter(m => m.name.toLowerCase().includes(q)) : _allModels;
-  renderModels(filtered);
+  renderModels(q ? _allModels.filter(m => m.name.toLowerCase().includes(q)) : _allModels);
 }
-
 function _isActiveModel(modelName) {
-  // _currentModel is like "ollama (qwen2.5:14b)" — extract the part in parens
   const m = _currentModel.match(/\((.+)\)$/);
   const current = m ? m[1].trim() : _currentModel.trim();
   return current === modelName;
 }
-
 function renderModels(models) {
   const list = document.getElementById('model-list');
-  if (!models.length) {
-    list.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:8px 4px">No models match.</div>';
-    return;
-  }
-
+  if (!models.length) { list.innerHTML = '<div style="font-size:11px;color:var(--t3);padding:8px 4px">No models match.</div>'; return; }
+  const ORDER = ['installed','uncensored','popular'];
   const grouped = {};
-  models.forEach(m => {
-    const g = m.provider || 'ollama';
-    if (!grouped[g]) grouped[g] = [];
-    grouped[g].push(m);
-  });
-
-  const checkSvg = `<svg class="mi-check" viewBox="0 0 14 14" fill="none">
-    <path d="M2 7l3.5 3.5L12 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>`;
-
-  // Escape model name for use as onclick arg (handles colons, slashes, etc.)
-  const safeId = n => n.replace(/[^a-zA-Z0-9]/g, '_');
-
-  list.innerHTML = Object.entries(grouped).map(([prov, items]) =>
-    `<div class="model-group-label">${esc(prov)}</div>` +
-    items.map(m => {
-      const active = _isActiveModel(m.name);
-      return `<div class="model-item${active ? ' active' : ''}" id="mi-${safeId(m.name)}"
-        onclick="selectModel('${esc(prov)}', '${esc(m.name)}')">
-        ${active ? checkSvg : '<div class="mi-check"></div>'}
-        <span class="mi-name">${esc(m.name)}</span>
-        <span class="mi-size">${esc(m.size)}</span>
-        <span class="mi-prov">${esc(prov)}</span>
+  models.forEach(m => { const g = m.group||(m.pulled?'installed':'uncensored'); if (!grouped[g]) grouped[g]=[]; grouped[g].push(m); });
+  const safeId = name => name.replace(/[^a-z0-9]/gi,'_');
+  const GROUP_LABELS = { installed:'Installed', uncensored:'Uncensored', popular:'Popular' };
+  let html = '';
+  ORDER.forEach(g => {
+    if (!grouped[g] || !grouped[g].length) return;
+    html += `<div class="model-group-label">${GROUP_LABELS[g]||g}</div>`;
+    grouped[g].forEach(m => {
+      const isActive = _isActiveModel(m.name), isPulled = m.pulled!==false, sid = safeId(m.name);
+      const checkIcon = isActive
+        ? `<svg class="mi-check" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5,8 6,11.5 13.5,4.5"/></svg>`
+        : isPulled
+          ? `<svg class="mi-check" viewBox="0 0 16 16" style="opacity:0.18"><circle cx="8" cy="8" r="3" fill="currentColor"/></svg>`
+          : `<svg class="mi-dl" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="2" x2="8" y2="11"/><polyline points="5,8.5 8,11.5 11,8.5"/><line x1="2" y1="14" x2="14" y2="14"/></svg>`;
+      const badge   = m.group==='uncensored' ? `<span class="mi-badge">uncensored</span>` : '';
+      const clickFn = isPulled ? `selectModel('ollama','${m.name}')` : `pullModel('${m.name}','${sid}')`;
+      html += `<div class="model-item${isActive?' active':''}${!isPulled?' not-pulled':''}" id="mi-${sid}" onclick="${clickFn}">
+        ${checkIcon}
+        <div style="flex:1;min-width:0">
+          <div class="mi-name">${esc(m.name)}</div>
+          ${m.desc?`<div class="mi-desc">${esc(m.desc)}</div>`:''}
+        </div>
+        ${badge}<span class="mi-size">${m.size||''}</span><span class="mi-prov">ollama</span>
       </div>`;
-    }).join('')
-  ).join('');
+    });
+  });
+  list.innerHTML = html;
 }
-
 async function selectModel(provider, model) {
   const statusEl = document.getElementById('llm-status-msg');
-  statusEl.className = 'llm-status-msg';
-  statusEl.textContent = `Switching to ${model}…`;
-
-  // Dim all items, mark selected as loading
-  document.querySelectorAll('.model-item').forEach(el => el.classList.add('loading'));
-  const target = document.getElementById('mi-' + model);
-  if (target) target.classList.remove('loading');
-
+  statusEl.textContent = 'Switching…'; statusEl.className = 'llm-status-msg';
   try {
-    const res = await fetch('/api/llm/set', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({provider, model}),
-    });
-    const d = await res.json();
-
-    document.querySelectorAll('.model-item').forEach(el => el.classList.remove('loading'));
-
-    if (!res.ok || d.needs_restart) {
-      statusEl.className = 'llm-status-msg err';
-      statusEl.innerHTML =
-        esc(d.error || 'Switch failed.') +
-        ' &nbsp;<button onclick="closeLLMPicker()" style="' +
-        'background:var(--red);border:none;color:#fff;padding:3px 10px;' +
-        'border-radius:3px;font-family:var(--fd);font-size:9px;letter-spacing:.08em;' +
-        'text-transform:uppercase;cursor:pointer">Restart Iceberg</button>';
-      return;
+    const res  = await fetch('/api/llm/set', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({provider,model}) });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    _currentModel = `${provider} (${model})`;
+    statusEl.textContent = `✓ Active: ${model}`; statusEl.className = 'llm-status-msg ok';
+    document.getElementById('model-btn-label').textContent = model;
+    renderModels(_allModels); loadStatus();
+    // Also refresh inline dropdown
+    await loadModelsForDropdown();
+  } catch(e) { statusEl.textContent = 'Error: ' + e.message; statusEl.className = 'llm-status-msg err'; }
+}
+async function pullModel(modelName, sid) {
+  const statusEl = document.getElementById('llm-status-msg');
+  const cardEl   = document.getElementById('mi-' + sid);
+  if (cardEl) cardEl.classList.add('loading');
+  statusEl.innerHTML = `Pulling ${esc(modelName)}…<div class="pull-bar-wrap"><div class="pull-bar" id="pull-bar"></div></div>`;
+  statusEl.className = 'llm-status-msg';
+  try {
+    const res     = await fetch('/api/ollama/pull', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({model:modelName}) });
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream:true });
+      const lines = buf.split('\n'); buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        let event; try { event = JSON.parse(line.slice(6)); } catch { continue; }
+        const bar = document.getElementById('pull-bar');
+        if (event.type==='progress') {
+          if (bar) bar.style.width=(event.pct||0)+'%';
+          if (statusEl.firstChild) statusEl.firstChild.textContent=`Pulling ${modelName}: ${event.text}`;
+        } else if (event.type==='status') {
+          if (statusEl.firstChild) statusEl.firstChild.textContent=`Pulling ${modelName}: ${event.text}`;
+        } else if (event.type==='done') {
+          statusEl.textContent=`✓ Pulled ${modelName}`; statusEl.className='llm-status-msg ok';
+          openLLMPicker(); return;
+        } else if (event.type==='error') { throw new Error(event.text); }
+      }
     }
-
-    // Pull fresh status from server to confirm what actually changed
-    await loadStatus();
-
-    // Update local tracking and re-render checkmarks
-    _currentModel = d.llm || model;
-    statusEl.className = 'llm-status-msg ok';
-    statusEl.textContent = '✓ Active: ' + (d.llm || model);
-    renderModels(_allModels);
-
-    setTimeout(closeLLMPicker, 1400);
   } catch(e) {
-    document.querySelectorAll('.model-item').forEach(el => el.classList.remove('loading'));
-    statusEl.className = 'llm-status-msg err';
-    statusEl.textContent = 'Error: ' + String(e);
+    statusEl.textContent='Pull failed: '+e.message; statusEl.className='llm-status-msg err';
+    if (cardEl) cardEl.classList.remove('loading');
   }
 }
 
-// ── Start ─────────────────────────────────────────────────────
-setInputEnabled(false);
+// ── Inline model dropdown (in chat bar) ──────────────────────
+let _dropModels = [];
+async function loadModelsForDropdown() {
+  try {
+    const [statusRes, modelsRes] = await Promise.allSettled([
+      fetch('/api/status').then(r => r.json()),
+      fetch('/api/llm/models').then(r => r.json()),
+    ]);
+    if (statusRes.status==='fulfilled') _currentModel = statusRes.value.llm || '';
+    if (modelsRes.status==='fulfilled') {
+      _dropModels = (modelsRes.value.models||[]).filter(m => m.pulled!==false);
+      renderModelDropdown();
+    }
+  } catch(e) { console.warn('[model-dropdown]', e); }
+}
+function renderModelDropdown() {
+  const list = document.getElementById('model-dropdown-list');
+  if (!_dropModels.length) {
+    list.innerHTML = '<div class="mdrop-item" style="color:var(--t3);font-size:10px">No models installed</div>'; return;
+  }
+  list.innerHTML = _dropModels.map(m => {
+    const isActive = _isActiveModel(m.name);
+    return `<div class="mdrop-item${isActive?' active':''}" onclick="selectModel('ollama','${esc(m.name)}');closeModelDropdown()">
+      <span class="mdrop-check">${isActive?'✓':''}</span>
+      <span class="mdrop-name">${esc(m.name)}</span>
+      <span class="mdrop-prov">${esc(m.size||'')}</span>
+    </div>`;
+  }).join('') +
+  `<div class="mdrop-item" style="border-top:1px solid var(--bdr);margin-top:4px;padding-top:8px"
+       onclick="closemodelDropdown();openLLMPicker()">
+    <span class="mdrop-check">⬡</span>
+    <span class="mdrop-name" style="color:var(--accent)">All models…</span>
+  </div>`;
+}
+let _modelDropOpen = false;
+function toggleModelDropdown() {
+  _modelDropOpen = !_modelDropOpen;
+  document.getElementById('model-dropdown').classList.toggle('open', _modelDropOpen);
+  if (_modelDropOpen) closePromptDropdown(true);
+}
+function closeModelDropdown() {
+  _modelDropOpen = false;
+  document.getElementById('model-dropdown').classList.remove('open');
+}
+function closemodelDropdown() { closeModelDropdown(); }
+
+// ── Prompt Manager ───────────────────────────────────────────
+let _prompts = [];
+let _editingPromptId = null;
+
+async function loadPrompts() {
+  try {
+    const res  = await fetch('/api/prompts');
+    if (!res.ok) return;
+    _prompts   = await res.json();
+    renderPromptList();
+  } catch(e) { console.warn('[prompts]', e); }
+}
+function renderPromptList() {
+  const list   = document.getElementById('prompt-list');
+  const badge  = document.getElementById('prompt-count-badge');
+  const active = _prompts.filter(p => p.enabled).length;
+  badge.textContent = active ? `${active} on` : '';
+  if (!_prompts.length) { list.innerHTML = '<div class="prompt-empty">No prompts yet.</div>'; return; }
+  list.innerHTML = _prompts.map(p => `
+    <div class="prompt-item" data-id="${p.id}">
+      <button class="prompt-toggle${p.enabled?' on':''}" onclick="togglePrompt('${p.id}')" title="${p.enabled?'Disable':'Enable'}"></button>
+      <span class="prompt-name" onclick="editPrompt('${p.id}')" title="${esc(p.text)}">${esc(p.name)}</span>
+      <div class="prompt-actions">
+        <button class="prompt-action-btn" onclick="editPrompt('${p.id}')" title="Edit">✎</button>
+        <button class="prompt-action-btn del" onclick="deletePrompt('${p.id}')" title="Delete">✕</button>
+      </div>
+    </div>`
+  ).join('');
+}
+let _promptDropOpen = false;
+function togglePromptDropdown() {
+  _promptDropOpen = !_promptDropOpen;
+  document.getElementById('prompt-dropdown').classList.toggle('open', _promptDropOpen);
+  if (_promptDropOpen) closeModelDropdown();
+}
+function closePromptDropdown(skipToggle) {
+  _promptDropOpen = false;
+  document.getElementById('prompt-dropdown').classList.remove('open');
+}
+function openPromptForm(id) {
+  _editingPromptId = id || null;
+  const form = document.getElementById('prompt-form');
+  const nameEl = document.getElementById('prompt-form-name');
+  const textEl = document.getElementById('prompt-form-text');
+  if (id) {
+    const p = _prompts.find(x => x.id===id);
+    if (p) { nameEl.value = p.name; textEl.value = p.text; }
+  } else { nameEl.value=''; textEl.value=''; }
+  form.classList.add('open');
+  setTimeout(() => nameEl.focus(), 50);
+}
+function closePromptForm() {
+  document.getElementById('prompt-form').classList.remove('open');
+  _editingPromptId = null;
+}
+async function savePrompt() {
+  const name = document.getElementById('prompt-form-name').value.trim();
+  const text = document.getElementById('prompt-form-text').value.trim();
+  if (!name || !text) return;
+  try {
+    if (_editingPromptId) {
+      await fetch('/api/prompts/' + _editingPromptId, {
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ name, text }),
+      });
+    } else {
+      await fetch('/api/prompts', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ name, text, enabled:true }),
+      });
+    }
+    await loadPrompts();
+    closePromptForm();
+  } catch(e) { console.warn('[save-prompt]', e); }
+}
+function editPrompt(id) { openPromptForm(id); }
+async function togglePrompt(id) {
+  const p = _prompts.find(x => x.id===id);
+  if (!p) return;
+  try {
+    await fetch('/api/prompts/' + id, {
+      method:'PUT', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ enabled: !p.enabled }),
+    });
+    await loadPrompts();
+  } catch(e) { console.warn('[toggle-prompt]', e); }
+}
+async function deletePrompt(id) {
+  if (!confirm('Delete this prompt?')) return;
+  try {
+    await fetch('/api/prompts/' + id, { method:'DELETE' });
+    await loadPrompts();
+  } catch(e) { console.warn('[delete-prompt]', e); }
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(e) {
+  const modelBtn  = document.getElementById('model-btn');
+  const promptBtn = document.getElementById('prompt-btn');
+  if (_modelDropOpen  && !modelBtn.contains(e.target))  closeModelDropdown();
+  if (_promptDropOpen && !promptBtn.contains(e.target)) closePromptDropdown();
+});
+
+// ── File Tree ─────────────────────────────────────────────────
+let _treeData = null;
+async function loadFileTree() {
+  try {
+    const res  = await fetch('/api/files/tree');
+    if (!res.ok) return;
+    _treeData  = await res.json();
+    renderFileTree(_treeData);
+  } catch(e) {
+    document.getElementById('file-tree').innerHTML = '<div class="tree-empty">Could not load files.</div>';
+  }
+}
+function renderFileTree(node, container, depth) {
+  container = container || document.getElementById('file-tree');
+  depth     = depth || 0;
+  if (depth === 0) container.innerHTML = '';
+  if (!node) return;
+
+  // If root node, render its children
+  const items = node.children || (Array.isArray(node) ? node : [node]);
+  items.forEach(item => {
+    const isDir = item.type === 'dir';
+    const nodeEl = document.createElement('div');
+    nodeEl.className = 'tree-node';
+    nodeEl.style.paddingLeft = (8 + depth * 14) + 'px';
+    nodeEl.dataset.path = item.path;
+    nodeEl.innerHTML = `
+      <span class="tree-toggle">${isDir ? '▸' : ''}</span>
+      <span class="tree-icon">${isDir ? '◫' : _fileIcon(item.name)}</span>
+      <span class="tree-name" title="${esc(item.path)}">${esc(item.name)}</span>`;
+    if (isDir && item.children && item.children.length) {
+      const childrenEl = document.createElement('div');
+      childrenEl.className = 'tree-children collapsed';
+      childrenEl.id = 'tc-' + btoa(item.path).replace(/=/g,'');
+      renderFileTree(item, childrenEl, depth + 1);
+      nodeEl.addEventListener('click', e => {
+        e.stopPropagation();
+        const collapsed = childrenEl.classList.toggle('collapsed');
+        nodeEl.querySelector('.tree-toggle').textContent = collapsed ? '▸' : '▾';
+      });
+      container.appendChild(nodeEl);
+      container.appendChild(childrenEl);
+    } else if (isDir) {
+      nodeEl.querySelector('.tree-toggle').textContent = '';
+      nodeEl.addEventListener('click', e => e.stopPropagation());
+      container.appendChild(nodeEl);
+    } else {
+      nodeEl.addEventListener('click', e => {
+        e.stopPropagation();
+        document.querySelectorAll('.tree-node.active').forEach(n => n.classList.remove('active'));
+        nodeEl.classList.add('active');
+        openFileInEditor(item.path, item.name);
+      });
+      container.appendChild(nodeEl);
+    }
+  });
+}
+function _fileIcon(name) {
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  const icons = { py:'🐍', js:'⚡', ts:'⚡', json:'{}', md:'📄', html:'🌐', css:'🎨',
+                  txt:'📃', csv:'📊', xlsx:'📊', xls:'📊', pdf:'📕', png:'🖼', jpg:'🖼',
+                  jpeg:'🖼', gif:'🖼', sh:'🔧', bat:'🔧', yaml:'⚙', yml:'⚙', toml:'⚙' };
+  return icons[ext] || '◈';
+}
+function collapseAllTree() {
+  document.querySelectorAll('.tree-children').forEach(el => el.classList.add('collapsed'));
+  document.querySelectorAll('.tree-toggle').forEach(el => { if (el.textContent==='▾') el.textContent='▸'; });
+}
+
+// ── Editor tabs ───────────────────────────────────────────────
+let _editorTabs = {};  // id → { path, name, content, type }
+let _activeTabId = null;
+
+async function openFileInEditor(path, name) {
+  // Check if already open
+  const existing = Object.entries(_editorTabs).find(([,v]) => v.path === path);
+  if (existing) { switchEditorTab(existing[0]); return; }
+
+  const tabId = 'etab-' + Date.now();
+  try {
+    const res  = await fetch('/api/file/view', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ path, max_rows:500 }),
+    });
+    const data = await res.json();
+    _editorTabs[tabId] = { path, name, data };
+    addEditorTab(tabId, name, data);
+  } catch(e) {
+    const tabId2 = 'etab-err-' + Date.now();
+    _editorTabs[tabId2] = { path, name, data:{ type:'error', message:String(e) } };
+    addEditorTab(tabId2, name, { type:'error', message:String(e) });
+  }
+}
+function addEditorTab(tabId, name, data) {
+  // Hide empty placeholder
+  document.getElementById('editor-empty').style.display = 'none';
+
+  // Create tab button
+  const tabBar   = document.getElementById('editor-tabbar');
+  const tabBtn   = document.createElement('div');
+  tabBtn.className  = 'editor-tab';
+  tabBtn.id         = tabId + '-btn';
+  tabBtn.innerHTML  = `<span class="editor-tab-icon">${_fileIcon(name)}</span>
+    <span>${esc(name)}</span>
+    <button class="editor-tab-x" onclick="closeEditorTab('${tabId}')" title="Close">×</button>`;
+  tabBtn.addEventListener('click', e => { if (!e.target.classList.contains('editor-tab-x')) switchEditorTab(tabId); });
+  tabBar.appendChild(tabBtn);
+
+  // Create content view
+  const contentEl = document.getElementById('editor-content');
+  const view = document.createElement('div');
+  view.className = 'editor-view';
+  view.id = tabId + '-view';
+  view.innerHTML = _buildEditorContent(data);
+  contentEl.appendChild(view);
+
+  // Activate
+  switchEditorTab(tabId);
+}
+function _buildEditorContent(data) {
+  if (!data) return '<pre style="padding:16px;color:var(--t3)">No content</pre>';
+  if (data.type === 'error') {
+    return `<div style="color:var(--red);padding:20px;font-size:12px">⚠ ${_edEsc(data.message || 'Error')}</div>`;
+  }
+  if (data.type === 'table') {
+    const headers = data.headers || [];
+    const rows    = data.rows    || [];
+    let tbl = '<table class="fv-table"><thead><tr><th class="fv-row-num">#</th>';
+    headers.forEach(h => { tbl += `<th>${_edEsc(String(h))}</th>`; });
+    tbl += '</tr></thead><tbody>';
+    rows.forEach((row, i) => {
+      tbl += `<tr><td class="fv-row-num">${i+1}</td>`;
+      headers.forEach((_,ci) => {
+        const cell = (row[ci]!==undefined && row[ci]!==null) ? String(row[ci]) : '';
+        tbl += `<td title="${_edEsc(cell)}">${_edEsc(cell)}</td>`;
+      });
+      tbl += '</tr>';
+    });
+    tbl += '</tbody></table>';
+    return tbl;
+  }
+  return `<pre style="padding:16px;font-size:11px;font-family:var(--fm);color:var(--t1);line-height:1.7;white-space:pre-wrap;word-break:break-all">${_edEsc(data.content || '')}</pre>`;
+}
+function _edEsc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function switchEditorTab(tabId) {
+  // Deactivate all
+  document.querySelectorAll('.editor-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.editor-view').forEach(v => v.classList.remove('active'));
+  // Activate target
+  const btn  = document.getElementById(tabId + '-btn');
+  const view = document.getElementById(tabId + '-view');
+  if (btn)  btn.classList.add('active');
+  if (view) view.classList.add('active');
+  _activeTabId = tabId;
+  // Update status bar
+  const tabData = _editorTabs[tabId];
+  if (tabData) {
+    document.getElementById('editor-statusbar').style.display = 'flex';
+    const d = tabData.data || {};
+    let info = tabData.path;
+    if (d.type==='table') info += ` · ${(d.rows||[]).length} rows · ${(d.headers||[]).length} cols`;
+    else if (d.content) info += ` · ${d.content.length.toLocaleString()} chars`;
+    document.getElementById('editor-status-info').textContent = info;
+  }
+}
+function closeEditorTab(tabId) {
+  delete _editorTabs[tabId];
+  const btn  = document.getElementById(tabId + '-btn');
+  const view = document.getElementById(tabId + '-view');
+  if (btn)  btn.remove();
+  if (view) view.remove();
+  const tabs = Object.keys(_editorTabs);
+  if (!tabs.length) {
+    _activeTabId = null;
+    document.getElementById('editor-empty').style.display = 'flex';
+    document.getElementById('editor-statusbar').style.display = 'none';
+  } else if (_activeTabId === tabId) {
+    switchEditorTab(tabs[tabs.length - 1]);
+  }
+  // Deactivate tree node
+  document.querySelectorAll('.tree-node.active').forEach(n => n.classList.remove('active'));
+}
+
+// ── Terminal ──────────────────────────────────────────────────
+let _terminals   = {};  // id → { shell, history[] }
+let _activeTermId = null;
+let _termIdCount  = 0;
+
+function addTerminal() {
+  document.getElementById('shell-type-modal').style.display = 'flex';
+}
+function closeShellModal() {
+  document.getElementById('shell-type-modal').style.display = 'none';
+}
+function confirmAddTerminal(shellType) {
+  closeShellModal();
+  _spawnTerminal(shellType);
+}
+function _spawnTerminal(shellType) {
+  const id    = 'term-' + (++_termIdCount);
+  const label = shellType === 'powershell' ? 'PowerShell' : 'CMD';
+  _terminals[id] = { shell: shellType, history: [] };
+
+  // Create tab
+  const tabBar = document.getElementById('term-tabbar');
+  const tabEl  = document.createElement('div');
+  tabEl.className = 'term-tab';
+  tabEl.id = id + '-tab';
+  tabEl.innerHTML = `${esc(label)} <button class="term-tab-x" onclick="closeTermTab('${id}')" title="Close">×</button>`;
+  tabEl.addEventListener('click', e => { if (!e.target.classList.contains('term-tab-x')) switchTermTab(id); });
+  tabBar.insertBefore(tabEl, tabBar.querySelector('.term-tabbar-actions'));
+
+  // Create terminal instance
+  const body    = document.getElementById('term-body');
+  const instEl  = document.createElement('div');
+  instEl.className = 'term-instance';
+  instEl.id = id + '-inst';
+  instEl.innerHTML = `
+    <div class="term-output" id="${id}-out"></div>
+    <div class="term-input-row">
+      <span class="term-prompt">›</span>
+      <input class="term-input" id="${id}-inp" placeholder="Enter command…"
+             onkeydown="termHandleKey(event,'${id}')">
+    </div>`;
+  body.appendChild(instEl);
+
+  // Print welcome
+  _termPrint(id, `${label} terminal ready. Type a command.`, 'sys');
+  switchTermTab(id);
+}
+function switchTermTab(id) {
+  Object.keys(_terminals).forEach(tid => {
+    document.getElementById(tid + '-tab')?.classList.toggle('active', tid===id);
+    document.getElementById(tid + '-inst')?.classList.toggle('active', tid===id);
+  });
+  _activeTermId = id;
+  setTimeout(() => document.getElementById(id + '-inp')?.focus(), 50);
+}
+function closeTermTab(id) {
+  delete _terminals[id];
+  document.getElementById(id + '-tab')?.remove();
+  document.getElementById(id + '-inst')?.remove();
+  const ids = Object.keys(_terminals);
+  _activeTermId = ids.length ? ids[ids.length-1] : null;
+  if (_activeTermId) switchTermTab(_activeTermId);
+}
+function toggleTermMenu() {
+  document.getElementById('term-menu').classList.toggle('open');
+}
+function deleteActiveTerminal() {
+  document.getElementById('term-menu').classList.remove('open');
+  if (_activeTermId) closeTermTab(_activeTermId);
+}
+document.addEventListener('click', function(e) {
+  const menuBtn = document.getElementById('term-menu-btn');
+  const menu    = document.getElementById('term-menu');
+  if (menu && !menu.contains(e.target) && menuBtn && !menuBtn.contains(e.target)) {
+    menu.classList.remove('open');
+  }
+});
+function _termPrint(id, text, cls) {
+  const out = document.getElementById(id + '-out');
+  if (!out) return;
+  const line = document.createElement('div');
+  line.className = 'term-line' + (cls ? ' ' + cls : '');
+  line.textContent = text;
+  out.appendChild(line);
+  out.scrollTop = out.scrollHeight;
+}
+function termHandleKey(e, id) {
+  if (e.key !== 'Enter') return;
+  const inp = document.getElementById(id + '-inp');
+  const cmd = inp.value.trim();
+  if (!cmd) return;
+  inp.value = '';
+  _termPrint(id, '› ' + cmd);
+  runTerminalCommand(id, cmd);
+}
+async function runTerminalCommand(id, cmd) {
+  const term = _terminals[id];
+  if (!term) return;
+  try {
+    const res = await fetch('/api/terminal/run', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ command:cmd, shell:term.shell }),
+    });
+    if (!res.ok) {
+      const d = await res.json();
+      _termPrint(id, '✗ ' + (d.error||'Error'), 'err');
+      return;
+    }
+    const reader  = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream:true });
+      const lines = buf.split('\n'); buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        let event; try { event = JSON.parse(line.slice(6)); } catch { continue; }
+        if (event.type==='stdout') _termPrint(id, event.text);
+        else if (event.type==='stderr') _termPrint(id, event.text, 'err');
+        else if (event.type==='error')  _termPrint(id, '✗ ' + event.text, 'err');
+        else if (event.type==='exit')   _termPrint(id, `[exit ${event.code}]`, 'sys');
+        else if (event.type==='done')   break;
+      }
+    }
+  } catch(e) {
+    _termPrint(id, '✗ Network error: ' + e.message, 'err');
+  }
+}
+
+// ── Conversation History ──────────────────────────────────────
+async function refreshHistory() {
+  try {
+    const res  = await fetch('/api/history');
+    if (!res.ok) return;
+    const data = await res.json();
+    renderHistory(data.history || []);
+  } catch(e) { /* silent */ }
+}
+function renderHistory(items) {
+  const el = document.getElementById('conv-history');
+  if (!items.length) { el.innerHTML = '<div class="conv-empty">No history yet.</div>'; return; }
+  el.innerHTML = items.slice(-30).reverse().map(item => {
+    const isYou = item.role === 'user';
+    const text  = (item.content || '').slice(0, 80);
+    return `<div class="conv-entry${isYou?' you':''}">
+      <div class="conv-role">${isYou ? 'You' : 'Iceberg'}</div>
+      <div class="conv-text">${esc(text)}${(item.content||'').length>80?'…':''}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── File Viewer (standalone modal) ────────────────────────────
+let _fvCurrentPath='', _fvSheets=[], _fvActiveSheet='', _fvMaxRows=200;
+function openFileViewer() {
+  document.getElementById('fv-modal').classList.add('open');
+  document.getElementById('fv-content').innerHTML='';
+  document.getElementById('fv-sheet-tabs').innerHTML='';
+  document.getElementById('fv-path').value='';
+  document.getElementById('fv-status').textContent='Drop a file or paste a path to begin.';
+  const dz = document.getElementById('fv-drop-zone');
+  if (dz) dz.style.display='';
+  _fvCurrentPath=''; _fvSheets=[]; _fvActiveSheet='';
+}
+function closeFileViewer() { document.getElementById('fv-modal').classList.remove('open'); }
+document.getElementById('fv-modal').addEventListener('click', function(e) { if (e.target===this) closeFileViewer(); });
+function fvHandleDrop(e) { e.preventDefault(); e.currentTarget.classList.remove('drag-over'); const f=e.dataTransfer.files[0]; if(f) fvUploadAndView(f); }
+function fvHandleDragOver(e)  { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function fvHandleDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function fvHandleFileInput(e) { const f=e.target.files[0]; if(f) fvUploadAndView(f); }
+async function fvUploadAndView(file) {
+  fvSetLoading(`Uploading ${file.name}…`);
+  try {
+    const fd = new FormData(); fd.append('file', file);
+    const res  = await fetch('/api/file/upload', { method:'POST', body:fd });
+    const data = await res.json();
+    if (data.message && data.type==='error') throw new Error(data.message);
+    _fvCurrentPath = data.upload_path;
+    document.getElementById('fv-path').value = data.upload_path;
+    _fvRender(data);
+  } catch(e) { fvSetError(e.message); }
+}
+async function fvLoadPath() {
+  const path = document.getElementById('fv-path').value.trim();
+  if (!path) return;
+  _fvCurrentPath = path;
+  fvSetLoading('Loading…');
+  try {
+    const res  = await fetch('/api/file/view', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({path,sheet:_fvActiveSheet,max_rows:_fvMaxRows}) });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    _fvRender(data);
+  } catch(e) { fvSetError(e.message); }
+}
+async function fvSwitchSheet(sheet) {
+  _fvActiveSheet = sheet;
+  document.querySelectorAll('.fv-sheet-tab').forEach(t => t.classList.toggle('active', t.dataset.sheet===sheet));
+  fvSetLoading(`Loading sheet "${sheet}"…`);
+  try {
+    const res  = await fetch('/api/file/view', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({path:_fvCurrentPath,sheet,max_rows:_fvMaxRows}) });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    _fvRender(data);
+  } catch(e) { fvSetError(e.message); }
+}
+function fvApplyMaxRows() { const sel=document.getElementById('fv-maxrows'); _fvMaxRows=parseInt(sel.value,10)||200; if(_fvCurrentPath) fvLoadPath(); }
+function _fvEsc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function _fvRender(data) {
+  const contentEl = document.getElementById('fv-content');
+  const statusEl  = document.getElementById('fv-status');
+  const tabsEl    = document.getElementById('fv-sheet-tabs');
+  const dropEl    = document.getElementById('fv-drop-zone');
+  if (dropEl) dropEl.style.display='none';
+  if (data.sheets && data.sheets.length>1) {
+    _fvSheets=data.sheets; _fvActiveSheet=data.sheet||data.sheets[0];
+    tabsEl.innerHTML=data.sheets.map(s=>`<button class="fv-sheet-tab${s===_fvActiveSheet?' active':''}" data-sheet="${_fvEsc(s)}" onclick="fvSwitchSheet('${_fvEsc(s)}')">${_fvEsc(s)}</button>`).join('');
+  } else { tabsEl.innerHTML=''; }
+  if (data.type==='error') { fvSetError(data.message||data.content||'Unknown error'); return; }
+  if (data.type==='table') {
+    const headers=data.headers||[], rows=data.rows||[];
+    let tbl='<table class="fv-table"><thead><tr><th class="fv-row-num">#</th>';
+    headers.forEach(h=>{tbl+=`<th>${_fvEsc(String(h))}</th>`;});
+    tbl+='</tr></thead><tbody>';
+    rows.forEach((row,i)=>{
+      tbl+=`<tr><td class="fv-row-num">${i+1}</td>`;
+      headers.forEach((_,ci)=>{const cell=(row[ci]!==undefined&&row[ci]!==null)?String(row[ci]):'';tbl+=`<td title="${_fvEsc(cell)}">${_fvEsc(cell)}</td>`;});
+      tbl+='</tr>';
+    });
+    tbl+='</tbody></table>';
+    contentEl.innerHTML=tbl;
+    const total=data.total_rows||rows.length;
+    let st=`${rows.length.toLocaleString()} of ${total.toLocaleString()} rows · ${headers.length} columns`;
+    if(data.truncated) st+=' · ⚠ truncated';
+    statusEl.textContent=st;
+  } else {
+    contentEl.innerHTML=`<pre class="fv-code"><code>${_fvEsc(data.content||'')}</code></pre>`;
+    const chars=(data.content||'').length;
+    let st=`${chars.toLocaleString()} chars`;
+    if(data.language) st+=` · ${data.language}`;
+    if(data.truncated) st+=' · ⚠ truncated';
+    statusEl.textContent=st;
+  }
+}
+function fvSetLoading(msg) {
+  document.getElementById('fv-status').textContent=msg||'Loading…';
+  document.getElementById('fv-content').innerHTML='<div class="fv-spinner">⟳</div>';
+  const dropEl=document.getElementById('fv-drop-zone');
+  if(dropEl) dropEl.style.display='none';
+}
+function fvSetError(msg) {
+  document.getElementById('fv-status').textContent='Error';
+  document.getElementById('fv-content').innerHTML=`<div style="color:var(--red);padding:28px 24px;font-size:12px;line-height:1.6">⚠ ${_fvEsc(msg)}</div>`;
+  const dropEl=document.getElementById('fv-drop-zone');
+  if(dropEl) dropEl.style.display='none';
+}
+
+// ── Spawn default terminal on load ────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  _spawnTerminal('cmd');
+});
+
 boot();
 </script>
 </body>

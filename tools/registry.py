@@ -8,9 +8,12 @@ Each entry:
   args:        list of {"name": str, "required": bool, "description": str}
 """
 
-from tools.file_tools import append_file, create_file, delete_file, list_dir, move_file, read_file
+from tools.file_tools import (append_file, create_file, delete_file, list_dir,
+                              move_file, read_file)
 from tools.scan_tools import scan
 from tools.scraper_tools import scrape_paginated
+from tools.vision_tools import (analyze_image, capture_screen,
+                                read_text_from_image)
 from tools.web_tools import web_search
 
 TOOL_REGISTRY = {
@@ -19,7 +22,11 @@ TOOL_REGISTRY = {
         "description": "List the contents of a directory.",
         "category": "file",
         "args": [
-            {"name": "path", "required": False, "description": "Directory path. Defaults to current dir."},
+            {
+                "name": "path",
+                "required": False,
+                "description": "Directory path. Defaults to current dir.",
+            },
         ],
     },
     "create_file": {
@@ -82,11 +89,72 @@ TOOL_REGISTRY = {
         "category": "web",
         "args": [
             {"name": "url", "required": True, "description": "Starting URL to scrape"},
-            {"name": "selector", "required": True, "description": "CSS selector for elements to extract"},
-            {"name": "extract", "required": False, "description": "What to extract: 'href', 'text', 'html', or attribute name"},
-            {"name": "pagination", "required": False, "description": "Pagination type: 'auto', 'button', 'url', 'scroll'"},
-            {"name": "max_pages", "required": False, "description": "Maximum pages to scrape (default: 10)"},
-            {"name": "next_button", "required": False, "description": "CSS selector for next button"},
+            {
+                "name": "selector",
+                "required": True,
+                "description": "CSS selector for elements to extract",
+            },
+            {
+                "name": "extract",
+                "required": False,
+                "description": "What to extract: 'href', 'text', 'html', or attribute name",
+            },
+            {
+                "name": "pagination",
+                "required": False,
+                "description": "Pagination type: 'auto', 'button', 'url', 'scroll'",
+            },
+            {
+                "name": "max_pages",
+                "required": False,
+                "description": "Maximum pages to scrape (default: 10)",
+            },
+            {
+                "name": "next_button",
+                "required": False,
+                "description": "CSS selector for next button",
+            },
+        ],
+    },
+    "analyze_image": {
+        "func": analyze_image,
+        "description": "Analyze an image file with a local vision model. Describe contents, answer questions, identify objects.",
+        "category": "vision",
+        "args": [
+            {
+                "name": "path",
+                "required": True,
+                "description": "Path to the image file (JPEG, PNG, WEBP, etc.)",
+            },
+            {
+                "name": "prompt",
+                "required": False,
+                "description": "What to ask about the image. Default: general description.",
+            },
+        ],
+    },
+    "capture_screen": {
+        "func": capture_screen,
+        "description": "Take a screenshot of the primary display and analyze it with a vision model.",
+        "category": "vision",
+        "args": [
+            {
+                "name": "prompt",
+                "required": False,
+                "description": "What to ask about the screen. Default: general description.",
+            },
+        ],
+    },
+    "read_text_from_image": {
+        "func": read_text_from_image,
+        "description": "Extract text from an image using the vision model (OCR). Works on receipts, documents, screenshots.",
+        "category": "vision",
+        "args": [
+            {
+                "name": "path",
+                "required": True,
+                "description": "Path to the image file to extract text from.",
+            },
         ],
     },
 }
@@ -106,7 +174,7 @@ def describe_all() -> str:
     """Human-readable tool list for the `tools` command."""
     lines = []
     for name, entry in sorted(TOOL_REGISTRY.items()):
-        lines.append(f"  {name:14s} [{entry['category']}] - {entry['description']}")
+        lines.append(f"  {name:20s} [{entry['category']}] - {entry['description']}")
     return "\n".join(lines)
 
 
@@ -127,7 +195,7 @@ def describe_for_llm() -> str:
 
 
 def register(name: str, func, description: str = "", category: str = "custom", args=None) -> None:
-    """Used by plugins."""
+    """Used by plugins to add tools at runtime."""
     TOOL_REGISTRY[name] = {
         "func": func,
         "description": description,

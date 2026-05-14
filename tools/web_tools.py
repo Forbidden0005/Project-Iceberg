@@ -2,7 +2,8 @@
 
 import re
 
-from agent_core.constants import WEB_SEARCH_DEFAULT_MAX_RESULTS, WEB_SEARCH_TIMEOUT_SECONDS
+from agent_core.constants import (WEB_SEARCH_DEFAULT_MAX_RESULTS,
+                                  WEB_SEARCH_TIMEOUT_SECONDS)
 
 try:
     import requests

@@ -1,7 +1,7 @@
 # Project Iceberg — Claude Configuration
 
-**Last Updated**: 2026-05-11  
-**Claude Version**: Sonnet 4.5  
+**Last Updated**: 2026-05-13  
+**Claude Version**: Sonnet 4.6  
 **Project Lead**: Tyler
 
 ---
@@ -10,7 +10,7 @@
 
 **Project Iceberg** is a local-first, privacy-focused AI assistant with multi-LLM support, MCP extensibility, and a modular tool architecture. The tagline: *"What you see is just the tip of the iceberg."*
 
-**Core Value Prop**: Run a powerful AI assistant entirely on local hardware with automatic fallback across multiple LLM backends (LM Studio, Ollama, Anthropic), extensible via Model Context Protocol (MCP), with both CLI and web UI.
+**Core Value Prop**: Run a powerful AI assistant entirely on local hardware with automatic fallback across multiple LLM backends (LM Studio, Ollama, Anthropic), extensible via Model Context Protocol (MCP), with both CLI and web UI. Includes semantic memory (ChromaDB + nomic-embed-text), local voice (Whisper), vision tools (moondream/LLaVA via Ollama), and a fine-tuning pipeline (unsloth + LoRA).
 
 **Target Users**: Technical users who want local control, privacy, and extensibility without sacrificing capability.
 
@@ -112,10 +112,22 @@ Python 3.11+
 ├─ requests         # HTTP client
 ├─ flask            # Web UI server
 ├─ mcp              # Model Context Protocol
+├─ chromadb         # Semantic vector store (long-term memory)
+├─ pillow           # Image I/O for vision tools
+│
 └─ (optional)
-   ├─ SpeechRecognition
-   ├─ pyttsx3
-   └─ pyaudio       # Voice mode
+   ├─ openai-whisper  # Local offline speech recognition
+   ├─ pyttsx3         # Text-to-speech output
+   └─ pyaudio         # Microphone input
+```
+
+### ML / AI Infrastructure (via Ollama — no pip install)
+
+```
+Ollama models (pull once, use forever):
+  nomic-embed-text   # Semantic embeddings for memory (ollama pull nomic-embed-text)
+  moondream          # Vision analysis, fast ~1.7 GB (ollama pull moondream)
+  llava              # Richer vision reasoning, ~4 GB (ollama pull llava)
 ```
 
 ### Development Tools
@@ -127,9 +139,10 @@ Python 3.11+
 
 ### Codebase Stats
 
-- **55 Python files** (production code)
+- **59 Python files** (production code — +4 for ML upgrade)
 - **7 JSON files** (configs, workflows, test data)
 - **Last cleanup**: 2026-05-11 (all lint warnings resolved)
+- **ML upgrade**: 2026-05-13 (semantic memory, Whisper voice, vision tools, fine-tuning)
 
 ---
 
@@ -196,8 +209,16 @@ Project Iceberg/
 │   ├── base.py             # Module base class
 │   └── core/module.py      # Core module implementation
 │
+├── training/               # Fine-tuning pipeline (unsloth + LoRA)
+│   ├── export_history.py   # Export conversation history → JSONL dataset
+│   ├── finetune.py         # LoRA fine-tune on local GPU (GTX 1080 Ti)
+│   └── requirements_training.txt  # Heavy ML deps (install separately)
+│
+├── tools/
+│   └── vision_tools.py     # analyze_image, capture_screen, read_text_from_image
+│
 ├── utils/                  # Utilities
-│   └── embedding.py        # Cosine similarity for memory
+│   └── embedding.py        # SmartEmbedder: Ollama nomic-embed-text + BoW fallback
 │
 ├── workflows/              # User workflow definitions
 │   └── sample.json         # Example workflow
@@ -654,6 +675,29 @@ Use these skills when appropriate for the task at hand.
 - ✅ Multi-LLM support working
 - ✅ MCP integration functional
 - ✅ Web UI + CLI both stable
+
+### ML Upgrade (2026-05-13) — Completed
+
+- ✅ **Semantic memory**: ChromaDB + nomic-embed-text (Ollama). Falls back to bag-of-words if Ollama is down.
+- ✅ **Local voice**: openai-whisper replaces cloud SpeechRecognition. Fully offline, GTX 1080 Ti uses CUDA.
+- ✅ **Vision tools**: `analyze_image`, `capture_screen`, `read_text_from_image` via moondream/LLaVA (Ollama).
+- ✅ **Fine-tuning pipeline**: `training/export_history.py` + `training/finetune.py` (unsloth + LoRA, fits 7B in 11 GB).
+- ✅ **New API endpoints**: `/api/vision/analyze`, `/api/vision/screen`, `/api/training/export`
+
+### ML Setup Checklist (first-time)
+
+```bash
+# 1. Install Python deps
+pip install chromadb pillow openai-whisper
+
+# 2. Pull Ollama models (Ollama must be running)
+ollama pull nomic-embed-text   # semantic memory
+ollama pull moondream           # vision (fast, 1.7 GB)
+
+# 3. Optional: install fine-tuning deps (heavy!)
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+pip install -r training/requirements_training.txt
+```
 
 ### Known TODOs (Non-Critical)
 
