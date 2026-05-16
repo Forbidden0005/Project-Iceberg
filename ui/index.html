@@ -714,6 +714,53 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
 }
 .mcp-add-btn:hover{border-color:var(--accent);color:var(--accent)}
 
+/* Lessons pane */
+.lessons-toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 8px;border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.lessons-count{font-size:11px;color:var(--t3)}
+.lessons-clear-btn{
+  font-size:10px;padding:2px 8px;border-radius:3px;
+  border:1px solid var(--t3);background:transparent;color:var(--t2);cursor:pointer;
+}
+.lessons-clear-btn:hover{border-color:var(--err,#e06c75);color:var(--err,#e06c75)}
+.lessons-empty{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  text-align:center;font-size:12px;color:var(--t3);padding:20px;line-height:1.5;
+}
+#lessons-list{flex:1;overflow-y:auto;padding:6px}
+#lessons-list::-webkit-scrollbar{width:4px}
+#lessons-list::-webkit-scrollbar-thumb{background:var(--t3);border-radius:2px}
+.lesson-card{
+  border:1px solid var(--border);border-radius:4px;padding:8px;margin-bottom:6px;
+  background:var(--bg2);
+}
+.lesson-card-header{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.lesson-cat{
+  font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;
+  padding:1px 5px;border-radius:10px;flex-shrink:0;
+}
+.lesson-cat-planning{background:#3e4d6c;color:#7eb8f7}
+.lesson-cat-tool_use{background:#3d5a3e;color:#87d69c}
+.lesson-cat-error{background:#5c3a3a;color:#e8a0a0}
+.lesson-cat-user_preference{background:#4d3e5c;color:#c4a0e8}
+.lesson-trigger{font-size:10px;color:var(--t3);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lesson-delete{
+  background:transparent;border:none;color:var(--t3);cursor:pointer;
+  font-size:13px;padding:0 2px;flex-shrink:0;line-height:1;
+}
+.lesson-delete:hover{color:var(--err,#e06c75)}
+.lesson-text{font-size:11px;color:var(--t1);line-height:1.5;margin-bottom:5px}
+.lesson-meta{
+  display:flex;align-items:center;gap:8px;font-size:10px;color:var(--t3);
+}
+.lesson-conf-bar{
+  flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden;
+}
+.lesson-conf-fill{height:100%;background:var(--accent);border-radius:2px}
+.lesson-source{font-size:9px;opacity:.6}
+
 /* Section 6: Conversation History */
 .s6{
   height:220px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;
@@ -974,6 +1021,106 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
 /* ── MISC UTILITIES ─────────────────────────────────────── */
 .hidden{display:none!important}
 .sep{width:1px;height:18px;background:var(--bdr)}
+
+/* ── TOPBAR: FILE/EDIT MENU BAR ─────────────────────────────── */
+.topbar{position:relative}  /* anchor for centered logo */
+
+.menu-bar{display:flex;align-items:center;gap:0;flex-shrink:0}
+.menu-item{position:relative}
+
+.menu-trigger{
+  background:transparent;border:none;
+  padding:6px 10px;color:var(--t2);
+  font-family:var(--fd);font-size:10px;font-weight:600;
+  letter-spacing:0.08em;text-transform:uppercase;
+  cursor:pointer;border-radius:3px;
+  transition:color .15s,background .15s;
+}
+.menu-trigger:hover,.menu-trigger.open{color:var(--t1);background:var(--card)}
+
+.menu-dropdown{
+  position:absolute;top:calc(100% + 2px);left:0;
+  background:var(--card);border:1px solid var(--bdr2);border-radius:6px;
+  padding:4px 0;z-index:600;min-width:176px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.55);display:none;
+}
+.menu-dropdown.open{display:block}
+
+.menu-dd-item{
+  padding:6px 16px;cursor:pointer;font-size:11px;color:var(--t2);
+  transition:background .1s,color .1s;white-space:nowrap;
+}
+.menu-dd-item:hover{background:var(--card2);color:var(--t1)}
+.menu-dd-sep{height:1px;background:var(--bdr);margin:3px 0}
+
+/* ── TOPBAR: LOGO CENTERED ───────────────────────────────────── */
+.logo-centered{
+  position:absolute;left:50%;transform:translateX(-50%);
+  pointer-events:none;margin-right:0;
+}
+
+/* ── TOPBAR: MCP SMART DROPDOWN ─────────────────────────────── */
+.mcp-dropdown-wrap{position:relative;flex-shrink:0}
+
+.mcp-dropdown-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 11px;background:var(--card);
+  border:1px solid var(--bdr);border-radius:4px;
+  font-family:var(--fm);font-size:11px;color:var(--t2);
+  white-space:nowrap;cursor:pointer;
+  transition:border-color .15s;
+}
+.mcp-dropdown-btn:hover{border-color:var(--bdr2)}
+.mcp-dropdown-btn .pval{color:var(--t1);font-weight:500}
+.mcp-chevron{font-size:9px;color:var(--t3)}
+
+.mcp-health-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--t3)}
+.mcp-health-dot.healthy{background:var(--green);box-shadow:0 0 7px var(--green);animation:glow 2.4s ease-in-out infinite}
+.mcp-health-dot.issue{background:var(--amber);animation:mcpPulse 1s ease-in-out infinite}
+@keyframes mcpPulse{0%,100%{opacity:1;box-shadow:0 0 4px var(--amber)}50%{opacity:.4;box-shadow:none}}
+
+.mcp-dropdown-menu{
+  position:absolute;top:calc(100% + 6px);right:0;
+  background:var(--card);border:1px solid var(--bdr2);border-radius:8px;
+  padding:6px 0;z-index:600;min-width:260px;max-height:380px;
+  overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.55);display:none;
+}
+.mcp-dropdown-menu.open{display:block}
+.mcp-dropdown-menu::-webkit-scrollbar{width:4px}
+.mcp-dropdown-menu::-webkit-scrollbar-thumb{background:var(--t3);border-radius:2px}
+
+.mcp-dd-section-label{
+  padding:6px 14px 4px;font-size:9px;color:var(--t3);
+  font-family:var(--fd);letter-spacing:0.1em;text-transform:uppercase;
+  border-top:1px solid var(--bdr);margin-top:2px;
+}
+.mcp-dd-section-label:first-child{border-top:none;margin-top:0}
+
+.mcp-dd-item{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 14px;font-size:11px;color:var(--t2);
+  transition:background .1s;
+}
+.mcp-dd-item:hover{background:var(--card2)}
+.mcp-dd-item-name{flex:1;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mcp-dd-item-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
+
+.mcp-dd-action-btn{
+  background:transparent;border:1px solid var(--bdr);border-radius:3px;
+  padding:1px 7px;font-size:11px;cursor:pointer;color:var(--t2);
+  font-family:var(--fd);flex-shrink:0;transition:border-color .15s,color .15s;
+}
+.mcp-dd-action-btn.remove{border-color:rgba(255,68,85,0.3);color:rgba(255,68,85,0.6)}
+.mcp-dd-action-btn.remove:hover{border-color:var(--red);color:var(--red)}
+.mcp-dd-action-btn.add{border-color:rgba(61,143,255,0.3);color:var(--accent)}
+.mcp-dd-action-btn.add:hover{border-color:var(--accent);background:rgba(61,143,255,0.1)}
+
+.mcp-dd-empty{padding:6px 14px;font-size:10px;color:var(--t3);font-style:italic}
+
+/* ── S6 MINIMIZABLE HISTORY ──────────────────────────────────── */
+.s6{transition:height .2s}
+.s6.minimized{height:32px!important}
+.s6.minimized .conv-history{display:none}
 </style>
 </head>
 <body>
@@ -988,7 +1135,39 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
 
 <!-- ── TOPBAR ────────────────────────────────────────────── -->
 <div class="topbar">
-  <div class="logo">
+
+  <!-- File / Edit menus (top-left) -->
+  <div class="menu-bar">
+    <div class="menu-item" id="menu-item-file">
+      <button class="menu-trigger" id="menu-trigger-file" onclick="toggleMenu('file')">File</button>
+      <div class="menu-dropdown" id="menu-dropdown-file">
+        <div class="menu-dd-item" onclick="menuNewFile()">New Text File</div>
+        <div class="menu-dd-item" onclick="menuNewFolder()">New Folder</div>
+        <div class="menu-dd-sep"></div>
+        <div class="menu-dd-item" onclick="menuOpenFile()">Open File</div>
+        <div class="menu-dd-item" onclick="menuOpenFolder()">Open Folder</div>
+        <div class="menu-dd-sep"></div>
+        <div class="menu-dd-item" onclick="menuSave()">Save</div>
+        <div class="menu-dd-item" onclick="menuSaveAs()">Save As…</div>
+      </div>
+    </div>
+    <div class="menu-item" id="menu-item-edit">
+      <button class="menu-trigger" id="menu-trigger-edit" onclick="toggleMenu('edit')">Edit</button>
+      <div class="menu-dropdown" id="menu-dropdown-edit">
+        <div class="menu-dd-item" onclick="document.execCommand('undo');closeAllMenus()">Undo</div>
+        <div class="menu-dd-item" onclick="document.execCommand('redo');closeAllMenus()">Redo</div>
+        <div class="menu-dd-sep"></div>
+        <div class="menu-dd-item" onclick="document.execCommand('cut');closeAllMenus()">Cut</div>
+        <div class="menu-dd-item" onclick="document.execCommand('copy');closeAllMenus()">Copy</div>
+        <div class="menu-dd-item" onclick="document.execCommand('paste');closeAllMenus()">Paste</div>
+        <div class="menu-dd-sep"></div>
+        <div class="menu-dd-item" onclick="document.execCommand('selectAll');closeAllMenus()">Select All</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Centered logo (absolute, pointer-events:none so clicks pass through) -->
+  <div class="logo logo-centered">
     <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
       <polygon points="11,2 20,18 2,18" stroke="rgba(61,143,255,0.7)" stroke-width="1.2" fill="none"/>
       <polygon points="11,8 17,18 5,18" fill="rgba(61,143,255,0.12)" stroke="rgba(61,143,255,0.5)" stroke-width="1"/>
@@ -996,31 +1175,28 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
     Iceberg
   </div>
 
-  <div class="pill" onclick="openLLMPicker()" title="Click to change model">
-    <span class="pdot g" id="llm-dot"></span>
-    <span>LLM</span>
-    <span class="pval" id="llm-val">—</span>
-  </div>
-  <div class="pill">
-    <span class="pdot off" id="mcp-dot"></span>
-    <span>MCP</span>
-    <span class="pval" id="mcp-val">0 connected</span>
-  </div>
-  <div class="pill">
-    <span class="pdot off" id="tools-dot"></span>
-    <span>Tools</span>
-    <span class="pval" id="tools-val">0 registered</span>
-  </div>
-  <div class="pill">
-    <span>Memory</span>
-    <span class="pval" id="memory-val">0 entries</span>
-  </div>
-
   <div class="spacer"></div>
 
   <button class="tbtn" onclick="openFileViewer()" title="File Viewer">◫ Viewer</button>
   <button class="tbtn active" id="voice-btn" onclick="toggleVoice()">◉ Voice</button>
   <button class="tbtn danger" onclick="resetChat()">↺ Reset</button>
+
+  <!-- MCP smart dropdown (far right) -->
+  <div class="mcp-dropdown-wrap" id="mcp-dropdown-wrap">
+    <button class="mcp-dropdown-btn" onclick="toggleMCPDropdown()" title="MCP Servers">
+      <span class="mcp-health-dot" id="mcp-dot"></span>
+      <span>MCP</span>
+      <span class="pval" id="mcp-val">0 connected</span>
+      <span class="mcp-chevron">▾</span>
+    </button>
+    <div class="mcp-dropdown-menu" id="mcp-dropdown-menu">
+      <div class="mcp-dd-section-label">Installed</div>
+      <div id="mcp-dd-installed"><div class="mcp-dd-empty">No servers connected.</div></div>
+      <div class="mcp-dd-section-label">Available</div>
+      <div id="mcp-dd-available"><div class="mcp-dd-empty">Click MCP to load…</div></div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ── WORKSPACE ─────────────────────────────────────────── -->
@@ -1090,10 +1266,6 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
 
       <!-- Messages -->
       <div class="msgs" id="msgs">
-        <div class="msg a">
-          <div class="mmeta">Iceberg</div>
-          <div class="mbubble" id="welcome-msg">Initializing…</div>
-        </div>
       </div>
 
       <!-- Active skills strip -->
@@ -1167,6 +1339,7 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
         <button class="tab-btn active" id="tab-tools" onclick="switchRightTab('tools')">Tool Registry</button>
         <button class="tab-btn" id="tab-skills" onclick="switchRightTab('skills')">Skills</button>
         <button class="tab-btn" id="tab-mcp" onclick="switchRightTab('mcp')">MCP</button>
+        <button class="tab-btn" id="tab-lessons" onclick="switchRightTab('lessons')">Lessons</button>
       </div>
 
       <!-- Tools pane -->
@@ -1197,14 +1370,27 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
           <button class="mcp-add-btn" onclick="openModal()">+ Add MCP Server</button>
         </div>
       </div>
+
+      <!-- Lessons pane -->
+      <div class="tab-pane" id="pane-lessons">
+        <div class="lessons-toolbar">
+          <span class="lessons-count" id="lessons-count">0 lessons</span>
+          <button class="lessons-clear-btn" onclick="clearAllLessons()" title="Clear all learned lessons">Clear all</button>
+        </div>
+        <div class="lessons-empty" id="lessons-empty">
+          No lessons yet. Iceberg will learn from your interactions automatically.
+        </div>
+        <div id="lessons-list"></div>
+      </div>
     </div><!-- /.s5 -->
 
-    <!-- S6: Conversation History -->
-    <div class="s6">
+    <!-- S6: Conversation History (minimizable) -->
+    <div class="s6" id="s6-panel">
       <div class="panel-hdr">
         <div class="panel-hdr-title">◈ History</div>
         <div class="panel-hdr-actions">
           <button class="phbtn" onclick="refreshHistory()" title="Refresh">⟳</button>
+          <button class="phbtn" id="s6-minimize-btn" onclick="toggleS6()" title="Minimize">⊟</button>
         </div>
       </div>
       <div class="conv-history" id="conv-history">
@@ -1433,28 +1619,25 @@ async function boot() {
   setInputEnabled(true);
 }
 
-// ── Status pills ─────────────────────────────────────────────
+// ── Status (MCP health dot + model label) ────────────────────
 async function loadStatus() {
   try {
     const res = await fetch('/api/status');
     if (!res.ok) return;
     const d = await res.json();
-    document.getElementById('llm-val').textContent    = d.llm;
-    document.getElementById('llm-dot').className      = 'pdot ' + (d.llm_active ? 'g' : 'off');
-    document.getElementById('mcp-dot').className      = 'pdot ' + (d.mcp_servers.length > 0 ? 'g' : 'off');
-    document.getElementById('mcp-val').textContent    = d.mcp_servers.length + ' connected';
-    document.getElementById('tools-dot').className    = 'pdot ' + (d.tools_count > 0 ? 'g' : 'off');
-    document.getElementById('tools-val').textContent  = d.tools_count + ' registered';
-    document.getElementById('memory-val').textContent = d.memory_count + ' entr' + (d.memory_count === 1 ? 'y' : 'ies');
-    const wm = document.getElementById('welcome-msg');
-    if (wm) {
-      const mcpStr = d.mcp_servers.length
-        ? 'MCP: <span style="color:var(--accent2)">' + esc(d.mcp_servers.join(', ')) + '</span>. ' : '';
-      wm.innerHTML = 'Ready. LLM: <span style="color:var(--accent2)">' + esc(d.llm) + '</span>. ' +
-        mcpStr + '<span style="color:var(--t2)">' + d.tools_count + ' tools. Type anything.</span>';
+    const mcpCount = (d.mcp_servers || []).length;
+    // Update MCP health indicator
+    const dot = document.getElementById('mcp-dot');
+    if (dot) dot.className = 'mcp-health-dot ' + (mcpCount > 0 ? 'healthy' : 'issue');
+    const valEl = document.getElementById('mcp-val');
+    if (valEl) valEl.textContent = mcpCount + ' connected';
+    // Populate dropdown installed list
+    renderMCPDropdownInstalled(d.mcp_servers || []);
+    // Sync inline model button label
+    if (d.llm) {
+      const lbl = document.getElementById('model-btn-label');
+      if (lbl) lbl.textContent = d.llm.split('(')[1]?.replace(')','') || d.llm;
     }
-    // Sync model button label
-    if (d.llm) document.getElementById('model-btn-label').textContent = d.llm.split('(')[1]?.replace(')','') || d.llm;
   } catch(e) { console.warn('[status]', e); }
 }
 
@@ -1505,7 +1688,7 @@ const CAT_META = {
   memory:      { label:'Memory',      icon:'◈', color:'#ffaa00', order:11 },
   github:      { label:'GitHub',      icon:'⬟', color:'#00e09a', order:12 },
 };
-const CAT_OPEN_DEFAULT = new Set(['networking']);
+const CAT_OPEN_DEFAULT = new Set([]);  // all categories collapsed by default
 const _catOpen = {};
 
 function catKeyFromTool(t) {
@@ -1561,8 +1744,7 @@ function renderTools(tools) {
   const groups = {};
   tools.forEach(t => { const k = catKeyFromTool(t); if (!groups[k]) groups[k]=[]; groups[k].push(t); });
   const keys = Object.keys(groups).sort((a,b) => {
-    const oa = catMeta(a).order ?? 99, ob = catMeta(b).order ?? 99;
-    return oa !== ob ? oa - ob : a.localeCompare(b);
+    return catMeta(a).label.localeCompare(catMeta(b).label);
   });
   const tlist = document.getElementById('tlist');
   tlist.innerHTML = keys.map(key => {
@@ -1757,7 +1939,7 @@ let _slashOpen = false, _slashIdx = 0, _slashMatches = [];
 // ── Right-panel tab switching ──────────────────────────────────
 let _skillsLoaded = false;
 function switchRightTab(tab) {
-  ['tools','skills','mcp'].forEach(t => {
+  ['tools','skills','mcp','lessons'].forEach(t => {
     document.getElementById('tab-' + t).classList.toggle('active', t === tab);
     document.getElementById('pane-' + t).classList.toggle('active', t === tab);
   });
@@ -1766,6 +1948,87 @@ function switchRightTab(tab) {
     loadSkills().then(() => renderSkillsPanel(''));
   } else if (tab === 'skills') {
     renderSkillsPanel('');
+  } else if (tab === 'lessons') {
+    loadLessons();
+  }
+}
+
+// ── Self-Improvement: Lessons panel ───────────────────────────────
+
+let _lessons = [];
+
+async function loadLessons() {
+  try {
+    const res = await fetch('/api/lessons');
+    const data = await res.json();
+    _lessons = data.lessons || [];
+    renderLessons();
+  } catch (e) {
+    console.error('[lessons] load failed:', e);
+  }
+}
+
+function renderLessons() {
+  const list  = document.getElementById('lessons-list');
+  const empty = document.getElementById('lessons-empty');
+  const count = document.getElementById('lessons-count');
+
+  count.textContent = _lessons.length + ' lesson' + (_lessons.length !== 1 ? 's' : '');
+  empty.style.display = _lessons.length ? 'none' : 'flex';
+  list.style.display  = _lessons.length ? 'block' : 'none';
+
+  const catLabel = {
+    planning: 'Planning', tool_use: 'Tool Use',
+    error: 'Error', user_preference: 'Preference'
+  };
+
+  list.innerHTML = _lessons.map(l => {
+    const confPct = Math.round((l.effective_confidence ?? l.confidence) * 100);
+    const catCls  = 'lesson-cat-' + (l.category || 'planning');
+    const label   = catLabel[l.category] || l.category;
+    return `
+      <div class="lesson-card" id="lesson-${l.id}">
+        <div class="lesson-card-header">
+          <span class="lesson-cat ${catCls}">${label}</span>
+          <span class="lesson-trigger" title="${escHtml(l.trigger)}">${escHtml(l.trigger)}</span>
+          <button class="lesson-delete" onclick="deleteLesson('${l.id}')" title="Remove this lesson">×</button>
+        </div>
+        <div class="lesson-text">${escHtml(l.text)}</div>
+        <div class="lesson-meta">
+          <div class="lesson-conf-bar" title="Confidence: ${confPct}%">
+            <div class="lesson-conf-fill" style="width:${confPct}%"></div>
+          </div>
+          <span>${confPct}% conf</span>
+          <span>·</span>
+          <span>used ${l.use_count}×</span>
+          <span class="lesson-source">${l.source}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function escHtml(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function deleteLesson(id) {
+  try {
+    await fetch('/api/lessons/' + id, { method: 'DELETE' });
+    _lessons = _lessons.filter(l => l.id !== id);
+    renderLessons();
+  } catch (e) {
+    console.error('[lessons] delete failed:', e);
+  }
+}
+
+async function clearAllLessons() {
+  if (!confirm('Delete all ' + _lessons.length + ' learned lessons? This cannot be undone.')) return;
+  try {
+    await fetch('/api/lessons/clear', { method: 'POST' });
+    _lessons = [];
+    renderLessons();
+  } catch (e) {
+    console.error('[lessons] clear failed:', e);
   }
 }
 
@@ -2824,6 +3087,193 @@ function fvSetError(msg) {
   document.getElementById('fv-content').innerHTML=`<div style="color:var(--red);padding:28px 24px;font-size:12px;line-height:1.6">⚠ ${_fvEsc(msg)}</div>`;
   const dropEl=document.getElementById('fv-drop-zone');
   if(dropEl) dropEl.style.display='none';
+}
+
+// ── MCP Smart Dropdown ────────────────────────────────────────
+let _mcpDropOpen = false;
+let _mcpCatalogLoaded = false;
+
+function toggleMCPDropdown() {
+  _mcpDropOpen = !_mcpDropOpen;
+  document.getElementById('mcp-dropdown-menu').classList.toggle('open', _mcpDropOpen);
+  if (_mcpDropOpen && !_mcpCatalogLoaded) {
+    _mcpCatalogLoaded = true;
+    loadMCPDropdownCatalog();
+  }
+}
+
+function renderMCPDropdownInstalled(servers) {
+  const el = document.getElementById('mcp-dd-installed');
+  if (!el) return;
+  if (!servers.length) {
+    el.innerHTML = '<div class="mcp-dd-empty">No servers connected.</div>';
+    return;
+  }
+  el.innerHTML = servers.map(name => `
+    <div class="mcp-dd-item">
+      <span class="mcp-dd-item-dot"></span>
+      <span class="mcp-dd-item-name">${esc(name)}</span>
+      <button class="mcp-dd-action-btn remove" onclick="confirmRemoveMCP('${esc(name)}')">−</button>
+    </div>`
+  ).join('');
+}
+
+async function confirmRemoveMCP(serverName) {
+  if (!confirm('Remove MCP server "' + serverName + '"?\n\nThe server will be disconnected and the app will restart.')) return;
+  try {
+    const res = await fetch('/api/mcp/remove', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ server_name: serverName }),
+    });
+    if (res.ok) {
+      _mcpDropOpen = false;
+      document.getElementById('mcp-dropdown-menu').classList.remove('open');
+      document.getElementById('restart-server-name').textContent = serverName;
+      document.getElementById('restart-modal').style.display = 'flex';
+      setTimeout(() => document.getElementById('restart-modal').classList.add('open'), 10);
+    } else {
+      const d = await res.json().catch(() => ({}));
+      alert('Error removing server: ' + (d.error || 'Unknown error'));
+    }
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function loadMCPDropdownCatalog() {
+  const el = document.getElementById('mcp-dd-available');
+  if (!el) return;
+  el.innerHTML = '<div class="mcp-dd-empty">Loading…</div>';
+  try {
+    const res = await fetch('/api/mcp/catalog');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const servers = data.servers || [];
+    if (!servers.length) {
+      el.innerHTML = '<div class="mcp-dd-empty">No servers available.</div>';
+      return;
+    }
+    el.innerHTML = servers.map(srv => `
+      <div class="mcp-dd-item">
+        <span class="mcp-dd-item-name" title="${esc(srv.description || '')}">${esc(srv.display_name)}</span>
+        <button class="mcp-dd-action-btn add"
+          onclick="_mcpDropOpen=false;document.getElementById('mcp-dropdown-menu').classList.remove('open');addMCPServer('${esc(srv.name)}',${!!srv.requires_api_key})">+</button>
+      </div>`
+    ).join('');
+  } catch(e) {
+    el.innerHTML = '<div class="mcp-dd-empty" style="color:var(--red)">Failed to load catalog.</div>';
+  }
+}
+
+// Close MCP dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  const wrap = document.getElementById('mcp-dropdown-wrap');
+  if (_mcpDropOpen && wrap && !wrap.contains(e.target)) {
+    _mcpDropOpen = false;
+    document.getElementById('mcp-dropdown-menu').classList.remove('open');
+  }
+});
+
+// ── File / Edit Menu Bar ──────────────────────────────────────
+let _openMenu = null;
+
+function toggleMenu(name) {
+  if (_openMenu === name) {
+    closeAllMenus();
+  } else {
+    closeAllMenus();
+    const dd  = document.getElementById('menu-dropdown-' + name);
+    const btn = document.getElementById('menu-trigger-' + name);
+    if (dd)  dd.classList.add('open');
+    if (btn) btn.classList.add('open');
+    _openMenu = name;
+  }
+}
+
+function closeAllMenus() {
+  ['file','edit'].forEach(n => {
+    document.getElementById('menu-dropdown-' + n)?.classList.remove('open');
+    document.getElementById('menu-trigger-'  + n)?.classList.remove('open');
+  });
+  _openMenu = null;
+}
+
+document.addEventListener('click', function(e) {
+  if (!_openMenu) return;
+  const bar = document.querySelector('.menu-bar');
+  if (bar && !bar.contains(e.target)) closeAllMenus();
+});
+
+async function menuNewFile() {
+  closeAllMenus();
+  const name = prompt('New file name (relative to project root):');
+  if (!name || !name.trim()) return;
+  try {
+    const res  = await fetch('/api/tool/run', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tool: 'create_file', args: { path: name.trim(), content: '' } }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      loadFileTree();
+      appendMsg('a', '<div class="mmeta">Iceberg</div><div class="mbubble">Created <strong>' + esc(name.trim()) + '</strong></div>');
+    } else {
+      appendMsg('a', '<div class="mmeta">Iceberg</div><div class="mbubble" style="color:var(--red)">Error: ' + esc(data.error || 'Failed to create file') + '</div>');
+    }
+  } catch(e) { alert('Network error: ' + e.message); }
+}
+
+function menuNewFolder() {
+  closeAllMenus();
+  const name = prompt('New folder name (relative to project root):');
+  if (!name || !name.trim()) return;
+  fetch('/api/tool/run', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tool: 'create_dir', args: { path: name.trim() } }),
+  }).then(r => r.json()).then(data => {
+    if (data.ok) { loadFileTree(); }
+    else alert('Error: ' + (data.error || 'Failed to create folder'));
+  }).catch(e => alert('Network error: ' + e.message));
+}
+
+function menuOpenFile() {
+  closeAllMenus();
+  openFileViewer();
+}
+
+function menuOpenFolder() {
+  closeAllMenus();
+  const path = prompt('Enter folder path to open in terminal:');
+  if (!path || !path.trim()) return;
+  if (_activeTermId) {
+    const inp = document.getElementById(_activeTermId + '-inp');
+    if (inp) { inp.value = 'cd "' + path.trim() + '"'; inp.focus(); }
+  }
+}
+
+function menuSave() {
+  closeAllMenus();
+  if (!_activeTabId) { alert('No file is open.'); return; }
+  const tab = _editorTabs[_activeTabId];
+  appendMsg('a', '<div class="mmeta">Iceberg</div><div class="mbubble" style="color:var(--t3)">Editor is read-only. Use the terminal to edit and save files directly.</div>');
+}
+
+function menuSaveAs() {
+  closeAllMenus();
+  if (!_activeTabId) { alert('No file is open.'); return; }
+  appendMsg('a', '<div class="mmeta">Iceberg</div><div class="mbubble" style="color:var(--t3)">Editor is read-only. Use the terminal to save files to a new location.</div>');
+}
+
+// ── S6 History Panel: Minimize / Expand ───────────────────────
+let _s6Minimized = false;
+
+function toggleS6() {
+  _s6Minimized = !_s6Minimized;
+  const panel = document.getElementById('s6-panel');
+  const btn   = document.getElementById('s6-minimize-btn');
+  if (panel) panel.classList.toggle('minimized', _s6Minimized);
+  if (btn) {
+    btn.textContent = _s6Minimized ? '⊞' : '⊟';
+    btn.title       = _s6Minimized ? 'Expand History' : 'Minimize History';
+  }
 }
 
 // ── Spawn default terminal on load ────────────────────────────

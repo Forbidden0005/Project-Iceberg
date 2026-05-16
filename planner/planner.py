@@ -18,13 +18,16 @@ from agent_core.constants import (HISTORY_WINDOW_FOR_PLANNING,
 
 
 class Planner:
-    def __init__(self, llm=None, tools_description: str = ""):
+    def __init__(self, llm=None, tools_description: str = "", lesson_store=None):
         """
-        llm: agent_core.llm.LLMProvider or None
+        llm:             agent_core.llm.LLMProvider or None
         tools_description: pre-rendered tool list for the prompt
+        lesson_store:    reflection.store.LessonStore or None — when provided,
+                         relevant past lessons are injected into every plan prompt.
         """
         self.llm = llm
         self.tools_description = tools_description or "(none available)"
+        self.lesson_store = lesson_store  # Optional[LessonStore]
 
     # ------------------------------------------------------------------
     # Public
@@ -80,8 +83,35 @@ Examples:
   -> []
 """
 
-    def _llm_plan(self, text: str, history: list[dict[str, str]]) -> Optional[list[dict[str, Any]]]:
-        system = self._SYSTEM_TEMPLATE.format(tools=self.tools_description)
+    def _lessons_block(self, text: str) -> str:
+        """Return a [Self-Improvement Context] block to append to the system prompt.
+
+        Retrieves the top-N lessons most relevant to *text* from the lesson store.
+        Returns an empty string if the store is unavailable or has no matches.
+        """
+        if not self.lesson_store:
+            return ""
+        try:
+            lessons = self.lesson_store.search(text, top_n=4)
+            if not lessons:
+                return ""
+            lines = [
+                "",
+                "[Self-Improvement Context]",
+                "Based on past experience, keep these lessons in mind:",
+            ]
+            for i, lesson in enumerate(lessons, 1):
+                lines.append(f"{i}. {lesson.text}")
+            lines.append("")
+            return "\n".join(lines)
+        except Exception:
+            return ""
+
+    def _llm_plan(
+        self, text: str, history: list[dict[str, str]]
+    ) -> Optional[list[dict[str, Any]]]:
+        lessons_block = self._lessons_block(text)
+        system = self._SYSTEM_TEMPLATE.format(tools=self.tools_description) + lessons_block
         messages: list[dict[str, str]] = [{"role": "system", "content": system}]
         messages.extend(
             history[-HISTORY_WINDOW_FOR_PLANNING:]
@@ -191,31 +221,14 @@ Examples:
                 steps.append({"tool": "web_search", "args": {"query": q}})
 
         # Scrape pattern: scrape URL [selector "CSS"] [pages X-Y]
-        # Supports: scrape URL pages 1-3 selector "a.link"
-        #           scrape URL selector "a.link" pages 1-3
-        #           scrape URL selector "a.link"
-        #           scrape URL pages 1-3
         m = re.search(r"scrape\s+(https?://\S+)(?:\s+(.+))?", lower)
         if m:
             url = m.group(1)
             rest = m.group(2) or ""
-
-            # Extract selector if present
-            selector = "a"  # default
-            selector_match = re.search(r'selector\s+["\']([^"\']+)["\']', rest)
-            if selector_match:
-                selector = selector_match.group(1)
-                rest = re.sub(r'selector\s+["\'][^"\']+["\']', "", rest).strip()
-
-            # Extract pages if present
-            max_pages = 10  # default
-            pages_match = re.search(r"pages?\s+(\d+)(?:-(\d+))?", rest)
-            if pages_match:
-                if pages_match.group(2):  # range like "1-4"
-                    max_pages = int(pages_match.group(2))
-                else:  # single page like "page 5"
-                    max_pages = int(pages_match.group(1))
-
+            sel_m = re.search(r'selector\s+"([^"]+)"', rest)
+            selector = sel_m.group(1) if sel_m else "a"
+            pages_m = re.search(r"pages?\s+(\d+)[-–](\d+)", rest)
+            max_pages = int(pages_m.group(2)) if pages_m else 1
             steps.append(
                 {
                     "tool": "scrape_paginated",
@@ -223,7 +236,7 @@ Examples:
                 }
             )
 
-        if re.search(r"\b(sysinfo|system info|system information)\b", lower):
+        if re.search(r"\b(?:sysinfo|system info|system status|hardware)\b", lower):
             steps.append({"tool": "sysinfo", "args": {}})
 
         return steps or None

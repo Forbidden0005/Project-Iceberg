@@ -15,8 +15,16 @@ env/
 logs/*.log
 logs/*.TXT
 memory_store.json
+memory_store_chroma/
+memory/lessons.json
 config.json
 safety/policy.json
+
+# Secrets — never commit these
+*token*.txt
+*secret*.txt
+*api_key*.txt
+*.isorted
 
 # IDE
 .vscode/

@@ -1654,6 +1654,57 @@ def api_restart() -> Response:
 
 
 # ---------------------------------------------------------------------------
+# Self-improvement: lessons API
+# ---------------------------------------------------------------------------
+
+
+@app.route("/api/lessons", methods=["GET"])
+def api_lessons_list() -> Response:
+    """Return all stored self-improvement lessons, newest first."""
+    try:
+        agent = _require_agent()
+        store = getattr(agent, "lesson_store", None)
+        if store is None:
+            return jsonify({"lessons": [], "error": "lesson store not initialised"})
+        lessons = [l.to_dict() for l in store.all()]
+        return jsonify({"lessons": lessons, "count": len(lessons)})
+    except Exception as e:
+        return jsonify({"lessons": [], "error": str(e)})
+
+
+@app.route("/api/lessons/<lesson_id>", methods=["DELETE"])
+def api_lessons_delete(lesson_id: str) -> Response:
+    """Delete a specific lesson by ID."""
+    try:
+        agent = _require_agent()
+        store = getattr(agent, "lesson_store", None)
+        if store is None:
+            return jsonify({"ok": False, "error": "lesson store not initialised"})
+        removed = store.remove(lesson_id)
+        if removed:
+            return jsonify({"ok": True})
+        return jsonify({"ok": False, "error": "lesson not found"}), 404
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/lessons/clear", methods=["POST"])
+def api_lessons_clear() -> Response:
+    """Delete all stored lessons (fresh start)."""
+    try:
+        agent = _require_agent()
+        store = getattr(agent, "lesson_store", None)
+        if store is None:
+            return jsonify({"ok": False, "error": "lesson store not initialised"})
+        all_lessons = store.all()
+        for lesson in all_lessons:
+            store.remove(lesson.id)
+        return jsonify({"ok": True, "deleted": len(all_lessons)})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 

@@ -24,6 +24,8 @@ from executor.executor import Executor
 from memory.long_memory import LongMemory
 from memory.short_memory import ShortMemory
 from planner.planner import Planner
+from reflection.engine import ReflectionEngine, TurnContext
+from reflection.store import LessonStore
 from safety.manager import SafetyManager
 from tools.registry import describe_for_llm
 
@@ -77,7 +79,12 @@ class OrchestratorAgent:
         self.logger.info(f"[mcp] {count}/{len(mcp_cfg)} server(s) connected")
 
     def _build_llm_stack(self) -> None:
-        """Probe providers and set up LLM-aware components."""
+        """Probe providers and set up LLM-aware components.
+
+        Note: lesson_store is wired into the planner after _build_memory_stack()
+        runs (see __init__ call order). The Planner accepts None and works fine
+        until the store is attached.
+        """
         self.llm = get_provider(logger=self.logger)
         self.llm_active = self.llm is not None
 
@@ -98,9 +105,13 @@ class OrchestratorAgent:
         )
 
     def _build_memory_stack(self) -> None:
-        """Short + long-term memory stores."""
+        """Short + long-term memory stores, plus the self-improvement system."""
         self.short_memory = ShortMemory()
         self.long_memory = LongMemory()
+        self.lesson_store = LessonStore()
+        self.reflection = ReflectionEngine(store=self.lesson_store, provider=self.llm)
+        # Wire lessons into the planner now that the store exists.
+        self.planner.lesson_store = self.lesson_store
 
     # ------------------------------------------------------------------
     # History management
@@ -183,6 +194,27 @@ class OrchestratorAgent:
         self._push("assistant", history_content or "(no output)")
         self.short_memory.add({"input": user_input, "output": display, "mode": mode})
         self.long_memory.add(user_input)
+
+        # Self-improvement: reflect on this turn in a background thread.
+        # Never fails loudly — any error is swallowed inside reflect_async.
+        turn_results = [
+            {"tool": getattr(r, "tool", None), "success": getattr(r, "ok", True), "output": str(r)}
+            for r in output
+            if hasattr(r, "tool")
+        ]
+        turn_error = next(
+            (str(r.output) for r in output if hasattr(r, "ok") and not r.ok), None
+        )
+        ctx = TurnContext(
+            user_request=user_input,
+            intent=mode,
+            plan=[],  # plan details live inside _run_tools; results carry the outcome
+            results=turn_results,
+            final_response=history_content,
+            success=turn_error is None,
+            error=turn_error,
+        )
+        self.reflection.reflect_async(ctx)
 
         return display
 
