@@ -376,6 +376,27 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
 .tf-result.err{color:var(--red);border-color:rgba(255,68,85,0.3)}
 
 /* Skill strip */
+/* ── Skill hint bar (live suggestions under input) ────────── */
+.skill-hint-bar{
+  display:none;align-items:center;gap:6px;flex-wrap:wrap;
+  padding:5px 12px 4px;background:var(--bg);
+  border-top:1px solid var(--bdr);flex-shrink:0;
+}
+.skill-hint-label{font-size:9px;color:var(--t3);font-family:var(--fd);
+  letter-spacing:0.07em;text-transform:uppercase;flex-shrink:0}
+.skill-hint-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:2px 9px;border:1px solid var(--bdr2);border-radius:10px;
+  font-size:10px;color:var(--t2);background:var(--card);cursor:default;
+  transition:border-color .15s,color .15s;
+}
+.skill-hint-chip:hover{border-color:var(--accent);color:var(--accent)}
+.skill-hint-chip .shc-score{font-size:9px;color:var(--t3)}
+.skill-hint-chip .shc-dot{
+  width:5px;height:5px;border-radius:50%;flex-shrink:0;
+  background:var(--green);opacity:0.7;
+}
+/* ── Active-skills strip ───────────────────────────────────── */
 .sk-strip{
   display:none;align-items:center;gap:6px;
   padding:5px 12px;background:var(--card);border-top:1px solid var(--bdr);
@@ -1266,6 +1287,12 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
 
       <!-- Messages -->
       <div class="msgs" id="msgs">
+      </div>
+
+      <!-- Live skill hint bar — populated as user types -->
+      <div class="skill-hint-bar" id="skill-hint-bar">
+        <span class="skill-hint-label">⚡ Skills</span>
+        <div id="skill-hint-chips"></div>
       </div>
 
       <!-- Active skills strip -->
@@ -2175,11 +2202,51 @@ function navigateSlash(dir) {
   const query = slashPos !== -1 ? ta.value.slice(slashPos+1).toLowerCase() : '';
   renderSlashList(query);
 }
+// ── Skill hint bar ────────────────────────────────────────────
+let _skillHintTimer = null;
+
+function _renderSkillHints(matches) {
+  const bar   = document.getElementById('skill-hint-bar');
+  const chips = document.getElementById('skill-hint-chips');
+  if (!matches || !matches.length) { bar.style.display = 'none'; return; }
+  chips.innerHTML = matches.map(m => {
+    const pct  = Math.round(m.score * 100);
+    const desc = m.description ? m.description.slice(0, 60) + (m.description.length > 60 ? '…' : '') : '';
+    return `<span class="skill-hint-chip" title="${esc(desc)}\nConfidence: ${pct}%">
+      <span class="shc-dot"></span>
+      <span>${esc(m.name || m.slug)}</span>
+      <span class="shc-score">${pct}%</span>
+    </span>`;
+  }).join('');
+  bar.style.display = 'flex';
+}
+
+async function _fetchSkillHints(query) {
+  if (!query || query.length < 4) {
+    document.getElementById('skill-hint-bar').style.display = 'none';
+    return;
+  }
+  try {
+    const res  = await fetch('/api/skills/match?q=' + encodeURIComponent(query) + '&top=4');
+    if (!res.ok) return;
+    const data = await res.json();
+    _renderSkillHints(data.matches || []);
+  } catch(e) { /* server not ready or no skill engine */ }
+}
+
 function handleInputChange(e) {
   const val      = e.target.value;
   const slashPos = val.lastIndexOf('/');
   if (slashPos !== -1) showSlashPopup(val.slice(slashPos+1).toLowerCase());
   else hideSlashPopup();
+
+  // Debounce skill hint fetch — 400 ms after user stops typing
+  clearTimeout(_skillHintTimer);
+  if (val.trim().length >= 4) {
+    _skillHintTimer = setTimeout(() => _fetchSkillHints(val.trim()), 400);
+  } else {
+    document.getElementById('skill-hint-bar').style.display = 'none';
+  }
 }
 
 // ── Chat ──────────────────────────────────────────────────────

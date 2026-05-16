@@ -81,9 +81,9 @@ class OrchestratorAgent:
     def _build_llm_stack(self) -> None:
         """Probe providers and set up LLM-aware components.
 
-        Note: lesson_store is wired into the planner after _build_memory_stack()
-        runs (see __init__ call order). The Planner accepts None and works fine
-        until the store is attached.
+        Note: lesson_store and skill_engine are wired into the planner after
+        _build_memory_stack() runs.  The Planner accepts None for both and
+        degrades gracefully until they are attached.
         """
         self.llm = get_provider(logger=self.logger)
         self.llm_active = self.llm is not None
@@ -105,13 +105,31 @@ class OrchestratorAgent:
         )
 
     def _build_memory_stack(self) -> None:
-        """Short + long-term memory stores, plus the self-improvement system."""
+        """Short + long-term memory stores, self-improvement, and skill engine."""
         self.short_memory = ShortMemory()
-        self.long_memory = LongMemory()
+        self.long_memory  = LongMemory()
         self.lesson_store = LessonStore()
-        self.reflection = ReflectionEngine(store=self.lesson_store, provider=self.llm)
+        self.reflection   = ReflectionEngine(store=self.lesson_store, provider=self.llm)
+
         # Wire lessons into the planner now that the store exists.
         self.planner.lesson_store = self.lesson_store
+
+        # Boot the skill engine — index 400+ SKILL.md files from the Skills dir.
+        # Path is configurable via SKILLS_DIR env var; falls back to ../Skills
+        # relative to this file's project root.
+        import os as _os
+        from agent_core.skill_engine import SkillEngine
+
+        skills_dir = _os.environ.get(
+            "SKILLS_DIR",
+            _os.path.normpath(
+                _os.path.join(_os.path.dirname(__file__), "..", "..", "Skills")
+            ),
+        )
+        self.skill_engine = SkillEngine(skills_dir)
+        count = self.skill_engine.load()
+        self.logger.info(f"[skills] indexed {count} skills from {skills_dir}")
+        self.planner.skill_engine = self.skill_engine
 
     # ------------------------------------------------------------------
     # History management

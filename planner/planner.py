@@ -18,16 +18,19 @@ from agent_core.constants import (HISTORY_WINDOW_FOR_PLANNING,
 
 
 class Planner:
-    def __init__(self, llm=None, tools_description: str = "", lesson_store=None):
+    def __init__(self, llm=None, tools_description: str = "", lesson_store=None, skill_engine=None):
         """
-        llm:             agent_core.llm.LLMProvider or None
+        llm:               agent_core.llm.LLMProvider or None
         tools_description: pre-rendered tool list for the prompt
-        lesson_store:    reflection.store.LessonStore or None — when provided,
-                         relevant past lessons are injected into every plan prompt.
+        lesson_store:      reflection.store.LessonStore or None — relevant past
+                           lessons are injected into every plan prompt.
+        skill_engine:      agent_core.skill_engine.SkillEngine or None — top
+                           matching skills are suggested in every plan prompt.
         """
         self.llm = llm
         self.tools_description = tools_description or "(none available)"
-        self.lesson_store = lesson_store  # Optional[LessonStore]
+        self.lesson_store  = lesson_store   # Optional[LessonStore]
+        self.skill_engine  = skill_engine   # Optional[SkillEngine]
 
     # ------------------------------------------------------------------
     # Public
@@ -83,6 +86,36 @@ Examples:
   -> []
 """
 
+    def _skills_block(self, text: str) -> str:
+        """Return a [Suggested Skills] block to append to the system prompt.
+
+        Queries the skill engine for skills relevant to *text*.  Top matches
+        (score >= 0.12) are listed so the LLM can suggest or apply them.
+        Returns an empty string when the engine is unavailable or no matches.
+        """
+        if not self.skill_engine:
+            return ""
+        try:
+            matches = self.skill_engine.match(text, top_n=4, min_score=0.12)
+            if not matches:
+                return ""
+            lines = [
+                "",
+                "[Suggested Skills]",
+                "These skills may be relevant to the user's request:",
+            ]
+            for m in matches:
+                desc_short = (m.description[:80] + "…") if len(m.description) > 80 else m.description
+                lines.append(f"- {m.slug} (confidence {m.score:.0%}): {desc_short}")
+            lines.append(
+                "If a skill is highly relevant, mention it to the user and "
+                "describe how it would help. Do not invent skill names."
+            )
+            lines.append("")
+            return "\n".join(lines)
+        except Exception:
+            return ""
+
     def _lessons_block(self, text: str) -> str:
         """Return a [Self-Improvement Context] block to append to the system prompt.
 
@@ -111,7 +144,8 @@ Examples:
         self, text: str, history: list[dict[str, str]]
     ) -> Optional[list[dict[str, Any]]]:
         lessons_block = self._lessons_block(text)
-        system = self._SYSTEM_TEMPLATE.format(tools=self.tools_description) + lessons_block
+        skills_block  = self._skills_block(text)
+        system = self._SYSTEM_TEMPLATE.format(tools=self.tools_description) + lessons_block + skills_block
         messages: list[dict[str, str]] = [{"role": "system", "content": system}]
         messages.extend(
             history[-HISTORY_WINDOW_FOR_PLANNING:]

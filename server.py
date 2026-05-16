@@ -1705,6 +1705,64 @@ def api_lessons_clear() -> Response:
 
 
 # ---------------------------------------------------------------------------
+# Skill engine — match query against indexed skills
+# ---------------------------------------------------------------------------
+
+
+@app.route("/api/skills/match", methods=["GET"])
+def api_skills_match() -> Response:
+    """
+    Return skills most relevant to a query string.
+
+    GET /api/skills/match?q=write+a+python+script&top=5
+
+    Response: {"matches": [{"slug":…,"name":…,"description":…,"score":…}], "count":…}
+    """
+    query   = request.args.get("q", "").strip()
+    top_n   = min(int(request.args.get("top", 5)), 10)
+
+    if not query:
+        return jsonify({"matches": [], "count": 0})
+
+    try:
+        agent  = _require_agent()
+        engine = getattr(agent, "skill_engine", None)
+        if engine is None:
+            return jsonify({"matches": [], "count": 0, "error": "skill engine not initialised"})
+
+        matches = engine.match(query, top_n=top_n)
+        return jsonify({
+            "matches": [
+                {
+                    "slug"        : m.slug,
+                    "name"        : m.name,
+                    "description" : m.description,
+                    "score"       : m.score,
+                }
+                for m in matches
+            ],
+            "count"      : len(matches),
+            "total_indexed": engine.skill_count(),
+        })
+    except Exception as e:
+        return jsonify({"matches": [], "count": 0, "error": str(e)}), 500
+
+
+@app.route("/api/skills/rebuild", methods=["POST"])
+def api_skills_rebuild() -> Response:
+    """Force a full rebuild of the skill index from disk."""
+    try:
+        agent  = _require_agent()
+        engine = getattr(agent, "skill_engine", None)
+        if engine is None:
+            return jsonify({"ok": False, "error": "skill engine not initialised"})
+        count = engine.rebuild()
+        return jsonify({"ok": True, "count": count})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
 # Native file / folder dialog  (tkinter subprocess, Windows-safe)
 # ---------------------------------------------------------------------------
 
