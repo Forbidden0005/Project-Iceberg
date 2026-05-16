@@ -1478,12 +1478,19 @@ html,body{height:100%;background:var(--bg);color:var(--t1);font-family:var(--fm)
 <div class="modal-bg" id="install-skill-modal" style="display:none">
   <div class="modal-panel" style="width:420px" id="install-skill-modal-panel">
     <div class="modal-title">Install Skill</div>
-    <div class="modal-sub">Enter the path to a skill folder or .yaml file.</div>
-    <input class="install-input" id="install-skill-path" placeholder="/path/to/skill">
+    <div class="modal-sub">Browse to the skill folder or .yaml file.</div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+      <div id="install-skill-path-display"
+           style="flex:1;padding:7px 10px;background:var(--bg);border:1px solid var(--bdr2);border-radius:4px;
+                  font-size:11px;font-family:var(--fm);color:var(--t2);min-height:30px;word-break:break-all">
+        No path selected
+      </div>
+      <button class="modal-btn secondary" style="flex-shrink:0" onclick="browseSkillPath()">Browse…</button>
+    </div>
     <div class="install-err" id="install-skill-err"></div>
     <div class="modal-actions">
       <button class="modal-btn secondary" onclick="closeInstallModal()">Cancel</button>
-      <button class="modal-btn primary" id="install-skill-btn" onclick="doInstallSkill()">install</button>
+      <button class="modal-btn primary" id="install-skill-btn" onclick="doInstallSkill()" disabled>Install</button>
     </div>
   </div>
 </div>
@@ -1907,30 +1914,46 @@ async function loadSkills() {
   }
 }
 function openInstallModal() {
-  const modal = document.getElementById('install-skill-modal');
-  const input = document.getElementById('install-skill-path');
   document.getElementById('install-skill-err').textContent = '';
-  input.value = '';
-  modal.style.display = 'flex';
-  setTimeout(() => input.focus(), 60);
+  document.getElementById('install-skill-path-display').textContent = 'No path selected';
+  document.getElementById('install-skill-path-display').dataset.path = '';
+  document.getElementById('install-skill-btn').disabled = true;
+  document.getElementById('install-skill-modal').style.display = 'flex';
 }
 function closeInstallModal() {
   document.getElementById('install-skill-modal').style.display = 'none';
 }
-async function doInstallSkill() {
-  const input = document.getElementById('install-skill-path');
-  const err   = document.getElementById('install-skill-err');
-  const btn   = document.getElementById('install-skill-btn');
-  const path  = input.value.trim();
-  if (!path) { err.textContent = 'Enter a path.'; return; }
-  btn.textContent = 'installing…'; btn.disabled = true; err.textContent = '';
+async function browseSkillPath() {
+  // Open native folder picker; fall back to file picker for .yaml
   try {
-    const r    = await fetch('/api/skills/install', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({path}) });
+    const res  = await fetch('/api/dialog/open-folder?title=Select+Skill+Folder');
+    const data = await res.json();
+    if (data.cancelled || !data.path) return;
+    document.getElementById('install-skill-path-display').textContent = data.path;
+    document.getElementById('install-skill-path-display').dataset.path = data.path;
+    document.getElementById('install-skill-btn').disabled = false;
+    document.getElementById('install-skill-err').textContent = '';
+  } catch(e) {
+    document.getElementById('install-skill-err').textContent = 'Could not open dialog: ' + e.message;
+  }
+}
+async function doInstallSkill() {
+  const display = document.getElementById('install-skill-path-display');
+  const err     = document.getElementById('install-skill-err');
+  const btn     = document.getElementById('install-skill-btn');
+  const path    = display.dataset.path || '';
+  if (!path) { err.textContent = 'No path selected — click Browse first.'; return; }
+  btn.textContent = 'Installing…'; btn.disabled = true; err.textContent = '';
+  try {
+    const r    = await fetch('/api/skills/install', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ path }),
+    });
     const data = await r.json();
-    if (!r.ok || data.error) { err.textContent = data.error || 'Install failed.'; }
+    if (!r.ok || data.error) { err.textContent = data.error || 'Install failed.'; btn.disabled = false; }
     else { await loadSkills(); closeInstallModal(); }
-  } catch(e) { err.textContent = 'Network error: ' + e.message; }
-  finally { btn.textContent = 'install'; btn.disabled = false; }
+  } catch(e) { err.textContent = 'Network error: ' + e.message; btn.disabled = false; }
+  finally { btn.textContent = 'Install'; }
 }
 
 const _activeSkills = new Set();
@@ -2638,12 +2661,120 @@ async function deletePrompt(id) {
   } catch(e) { console.warn('[delete-prompt]', e); }
 }
 
+// ── File / Edit menus ─────────────────────────────────────────
+function toggleMenu(name) {
+  const dropdown = document.getElementById('menu-dropdown-' + name);
+  if (!dropdown) return;
+  const isOpen = dropdown.classList.contains('open');
+  closeAllMenus();
+  if (!isOpen) dropdown.classList.add('open');
+}
+function closeAllMenus() {
+  document.querySelectorAll('.menu-dropdown').forEach(d => d.classList.remove('open'));
+}
+
+// Helper: call a native dialog endpoint and return the path (or null if cancelled)
+async function _pickFile(endpoint, title) {
+  try {
+    const res  = await fetch(endpoint + '?title=' + encodeURIComponent(title));
+    const data = await res.json();
+    return (data.cancelled || !data.path) ? null : data.path;
+  } catch(e) {
+    console.warn('[dialog]', e);
+    return null;
+  }
+}
+
+async function menuNewFile() {
+  closeAllMenus();
+  const path = await _pickFile('/api/dialog/save-file', 'New Text File');
+  if (!path) return;
+  // Create empty file via file-upload endpoint
+  try {
+    await fetch('/api/file/upload', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ path, content: '' }),
+    });
+    await loadFileTree();
+    openFileInEditor(path, path.split(/[\\/]/).pop());
+  } catch(e) { console.warn('[new-file]', e); }
+}
+
+async function menuNewFolder() {
+  closeAllMenus();
+  // Pick a parent directory, then ask the folder name
+  const parent = await _pickFile('/api/dialog/open-folder', 'Select Parent Folder');
+  if (!parent) return;
+  const name = prompt('Folder name:');
+  if (!name || !name.trim()) return;
+  try {
+    await fetch('/api/terminal/run', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ command: `mkdir "${parent.replace(/\\/g,'/')}/${name.trim()}"`, shell: 'cmd' }),
+    });
+    await loadFileTree();
+  } catch(e) { console.warn('[new-folder]', e); }
+}
+
+async function menuOpenFile() {
+  closeAllMenus();
+  const path = await _pickFile('/api/dialog/open-file', 'Open File');
+  if (!path) return;
+  openFileInEditor(path, path.split(/[\\/]/).pop());
+}
+
+async function menuOpenFolder() {
+  closeAllMenus();
+  const path = await _pickFile('/api/dialog/open-folder', 'Open Folder');
+  if (!path) return;
+  // Reload file tree rooted at the new folder
+  try {
+    const res  = await fetch('/api/files/tree?root=' + encodeURIComponent(path));
+    if (!res.ok) throw new Error(res.status);
+    _treeData = await res.json();
+    renderFileTree(_treeData);
+  } catch(e) { console.warn('[open-folder]', e); }
+}
+
+async function menuSave() {
+  closeAllMenus();
+  if (!_activeTabId) return;
+  const tab = _editorTabs[_activeTabId];
+  if (!tab) return;
+  // For text files, write back the content via terminal (write through)
+  try {
+    const content = tab.data?.content || '';
+    await fetch('/api/file/upload', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ path: tab.path, content }),
+    });
+  } catch(e) { console.warn('[save]', e); }
+}
+
+async function menuSaveAs() {
+  closeAllMenus();
+  const path = await _pickFile('/api/dialog/save-file', 'Save As');
+  if (!path) return;
+  const tab = _activeTabId ? _editorTabs[_activeTabId] : null;
+  const content = tab?.data?.content || '';
+  try {
+    await fetch('/api/file/upload', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ path, content }),
+    });
+    openFileInEditor(path, path.split(/[\\/]/).pop());
+  } catch(e) { console.warn('[save-as]', e); }
+}
+
 // Close dropdowns when clicking outside
 document.addEventListener('click', function(e) {
   const modelBtn  = document.getElementById('model-btn');
   const promptBtn = document.getElementById('prompt-btn');
   if (_modelDropOpen  && !modelBtn.contains(e.target))  closeModelDropdown();
   if (_promptDropOpen && !promptBtn.contains(e.target)) closePromptDropdown();
+  // Close File/Edit menus if click is outside the menu bar
+  const menuBar = document.querySelector('.menu-bar');
+  if (menuBar && !menuBar.contains(e.target)) closeAllMenus();
 });
 
 // ── File Tree ─────────────────────────────────────────────────

@@ -1705,6 +1705,85 @@ def api_lessons_clear() -> Response:
 
 
 # ---------------------------------------------------------------------------
+# Native file / folder dialog  (tkinter subprocess, Windows-safe)
+# ---------------------------------------------------------------------------
+
+
+def _run_tkinter_dialog(script: str) -> str:
+    """Run a tiny tkinter script in a subprocess and return the chosen path."""
+    import subprocess as _sp
+    import sys as _sys
+
+    result = _sp.run(
+        [_sys.executable, "-c", script],
+        capture_output=True,
+        text=True,
+        timeout=120,  # 2-minute timeout — user has time to browse
+    )
+    return result.stdout.strip()
+
+
+@app.route("/api/dialog/open-file")
+def api_dialog_open_file() -> Response:
+    """Show a native open-file dialog; return the selected path."""
+    title = request.args.get("title", "Open File")
+    script = (
+        "import tkinter as tk\n"
+        "from tkinter import filedialog\n"
+        "root = tk.Tk(); root.withdraw()\n"
+        "root.wm_attributes('-topmost', 1)\n"
+        f"path = filedialog.askopenfilename(title={title!r})\n"
+        "root.destroy()\n"
+        "print(path)\n"
+    )
+    try:
+        path = _run_tkinter_dialog(script)
+        return jsonify({"path": path, "cancelled": not bool(path)})
+    except Exception as e:
+        return jsonify({"path": "", "cancelled": True, "error": str(e)}), 500
+
+
+@app.route("/api/dialog/save-file")
+def api_dialog_save_file() -> Response:
+    """Show a native save-as dialog; return the selected path."""
+    title = request.args.get("title", "Save File")
+    script = (
+        "import tkinter as tk\n"
+        "from tkinter import filedialog\n"
+        "root = tk.Tk(); root.withdraw()\n"
+        "root.wm_attributes('-topmost', 1)\n"
+        f"path = filedialog.asksaveasfilename(title={title!r})\n"
+        "root.destroy()\n"
+        "print(path)\n"
+    )
+    try:
+        path = _run_tkinter_dialog(script)
+        return jsonify({"path": path, "cancelled": not bool(path)})
+    except Exception as e:
+        return jsonify({"path": "", "cancelled": True, "error": str(e)}), 500
+
+
+@app.route("/api/dialog/open-folder")
+def api_dialog_open_folder() -> Response:
+    """Show a native folder picker; return the selected path."""
+    title = request.args.get("title", "Select Folder")
+    script = (
+        "import tkinter as tk\n"
+        "from tkinter import filedialog\n"
+        "root = tk.Tk(); root.withdraw()\n"
+        "root.wm_attributes('-topmost', 1)\n"
+        f"path = filedialog.askdirectory(title={title!r})\n"
+        "root.destroy()\n"
+        "print(path)\n"
+    )
+    try:
+        path = _run_tkinter_dialog(script)
+        return jsonify({"path": path, "cancelled": not bool(path)})
+    except Exception as e:
+        return jsonify({"path": "", "cancelled": True, "error": str(e)}), 500
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
