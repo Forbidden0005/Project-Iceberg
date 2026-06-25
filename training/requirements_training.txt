@@ -14,16 +14,16 @@
 # unsloth: fast LoRA fine-tuning with 4-bit quant support
 # Install with: pip install "unsloth[cu118] @ git+https://github.com/unslothai/unsloth.git"
 # OR the pip release:
-unsloth>=2024.11.0
+unsloth>=2026.6.9
 
 # HuggingFace ecosystem
-transformers>=4.45.0
-datasets>=3.0.0
-accelerate>=0.34.0
-peft>=0.13.0
+transformers>=5.12.1
+datasets>=5.0.0
+accelerate>=1.14.0
+peft>=0.19.1
 
 # 8-bit Adam optimizer (saves VRAM during training)
-bitsandbytes>=0.44.0
+bitsandbytes>=0.49.2
 
 # Supervised fine-tuning trainer
-trl>=0.12.0
+trl>=1.7.0
