@@ -1,23 +1,23 @@
 # Core
-requests>=2.31.0
+requests>=2.34.2
 
 # Web UI server (python server.py)
-flask>=3.0.0
+flask>=3.1.3
 
 # MCP (Model Context Protocol) - connects Project Iceberg to external tool servers.
 # Install: pip install mcp
 # Docs:    https://modelcontextprotocol.io
-mcp>=1.0.0
+mcp>=1.28.0
 
 # Web scraping (for paginated sites, JS execution, browser automation)
-playwright>=1.40.0
+playwright>=1.60.0
 
 # ---- ML / Memory -------------------------------------------------------
 
 # Semantic vector store for long-term memory.
 # Local embedded mode — no separate server needed.
 # Install: pip install chromadb
-chromadb>=0.5.0
+chromadb>=1.5.9
 
 # nomic-embed-text embeddings are served via Ollama (no pip package needed).
 # Pull the model once: ollama pull nomic-embed-text
@@ -26,7 +26,7 @@ chromadb>=0.5.0
 # ---- Vision ------------------------------------------------------------
 
 # Required for capture_screen (screenshot capture) and image pre-processing.
-pillow>=10.0.0
+pillow>=12.2.0
 
 # Vision models are served via Ollama — no pip package needed.
 # Pull a model once (pick one):
@@ -39,12 +39,12 @@ pillow>=10.0.0
 # Install: pip install openai-whisper
 # Requires ffmpeg: https://ffmpeg.org/download.html
 #   Windows: winget install Gyan.FFmpeg  OR  choco install ffmpeg
-openai-whisper>=20231117
+openai-whisper>=20250625
 
 # Text-to-speech (output only — works offline)
-pyttsx3>=2.90
+pyttsx3>=2.99
 
 # pyaudio is required for microphone input. On Windows:
 #   pip install pipwin && pipwin install pyaudio
 # On Linux: sudo apt-get install portaudio19-dev python3-pyaudio
-pyaudio>=0.2.13
+pyaudio>=0.2.14
