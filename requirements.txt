@@ -7,10 +7,10 @@ flask>=3.1.3
 # MCP (Model Context Protocol) - connects Project Iceberg to external tool servers.
 # Install: pip install mcp
 # Docs:    https://modelcontextprotocol.io
-mcp>=1.28.1
+mcp>=2.0.0
 
 # Web scraping (for paginated sites, JS execution, browser automation)
-playwright>=1.61.0
+playwright>=1.62.0
 
 # ---- ML / Memory -------------------------------------------------------
 
